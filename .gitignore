@@ -1,0 +1,26 @@
+# Công cụ và thư viện cài cục bộ
+.agents/
+node_modules/
+dist/
+build/
+target/
+
+# Cấu hình và bí mật
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tệp người dùng và dữ liệu chạy local
+storage/
+uploads/
+receipts/
+postgres-data/
+
+# IDE và hệ điều hành
+.idea/
+.vscode/
+*.iml
+Thumbs.db
+.DS_Store
