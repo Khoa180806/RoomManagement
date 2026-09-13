@@ -7,15 +7,15 @@
 **Mô tả:** Tạo hai ứng dụng `backend` và `frontend`, Docker Compose cho PostgreSQL/backend/frontend, biến môi trường mẫu, kiểm tra format/lint/test cơ bản.
 
 **Tiêu chí chấp nhận:**
-- [ ] Backend và frontend khởi động độc lập bằng lệnh tài liệu hóa.
-- [ ] `docker compose up --build` khởi động được PostgreSQL, backend và frontend; database/chứng từ dùng volume bền vững.
-- [ ] Không có token, mật khẩu hoặc đường dẫn máy cá nhân trong source code.
-- [ ] Có migration rỗng đầu tiên và health endpoint nội bộ cho môi trường local.
+- [x] Backend và frontend khởi động độc lập bằng lệnh tài liệu hóa.
+- [x] `docker compose up --build` khởi động được PostgreSQL, backend và frontend; database/chứng từ dùng volume bền vững.
+- [x] Không có token, mật khẩu hoặc đường dẫn máy cá nhân trong source code.
+- [x] Có migration rỗng đầu tiên và health endpoint nội bộ cho môi trường local.
 
 **Kiểm chứng:**
-- [ ] `./mvnw verify -f backend/pom.xml` thành công.
-- [ ] `npm --prefix frontend run build` thành công.
-- [ ] `docker compose up --build` mở được giao diện và health endpoint.
+- [x] `./mvnw verify -f backend/pom.xml` thành công.
+- [x] `npm --prefix frontend run build` thành công.
+- [x] `docker compose up --build` mở được giao diện và health endpoint.
 
 **Phụ thuộc:** Không có.  
 **Tệp dự kiến:** `backend/pom.xml`, `frontend/package.json`, `compose.yaml`, Dockerfile, `.env.example`.  
