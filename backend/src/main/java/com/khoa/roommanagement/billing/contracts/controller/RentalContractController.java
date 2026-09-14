@@ -1,5 +1,8 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.controller;
 
+import com.khoa.roommanagement.billing.contracts.dto.CreateRentalContractRequest;
+import com.khoa.roommanagement.billing.contracts.dto.RentalContractResponse;
+import com.khoa.roommanagement.billing.contracts.service.RentalContractService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

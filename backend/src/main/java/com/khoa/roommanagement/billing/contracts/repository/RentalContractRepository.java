@@ -1,5 +1,7 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.repository;
 
+import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
+import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
 import java.util.UUID;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

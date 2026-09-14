@@ -1,5 +1,7 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.dto;
 
+import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
+import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,7 +17,7 @@ public record RentalContractResponse(
 	RentalContractStatus status
 ) {
 
-	static RentalContractResponse from(RentalContract contract) {
+	public static RentalContractResponse from(RentalContract contract) {
 		return new RentalContractResponse(
 			contract.getId(),
 			contract.getStartDate(),

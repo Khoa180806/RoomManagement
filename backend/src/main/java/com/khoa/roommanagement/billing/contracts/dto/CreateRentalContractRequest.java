@@ -1,5 +1,6 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.dto;
 
+import com.khoa.roommanagement.billing.contracts.dto.CreateRentalContractCommand;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -23,7 +24,7 @@ public record CreateRentalContractRequest(
 		return startDate != null && endDate != null && endDate.isAfter(startDate);
 	}
 
-	CreateRentalContractCommand toCommand() {
+	public CreateRentalContractCommand toCommand() {
 		return new CreateRentalContractCommand(
 			startDate,
 			endDate,

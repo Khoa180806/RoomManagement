@@ -1,5 +1,6 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.entity;
 
+import com.khoa.roommanagement.billing.contracts.dto.CreateRentalContractCommand;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,7 +52,7 @@ public class RentalContract {
 	protected RentalContract() {
 	}
 
-	static RentalContract createActive(CreateRentalContractCommand command) {
+	public static RentalContract createActive(CreateRentalContractCommand command) {
 		RentalContract contract = new RentalContract();
 		contract.id = UUID.randomUUID();
 		contract.startDate = command.startDate();

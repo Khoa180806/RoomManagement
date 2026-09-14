@@ -1,4 +1,4 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.entity;
 
 public enum RentalContractStatus {
 	ACTIVE,

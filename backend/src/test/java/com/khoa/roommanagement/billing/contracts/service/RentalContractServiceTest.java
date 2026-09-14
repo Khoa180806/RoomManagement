@@ -1,4 +1,4 @@
-package com.khoa.roommanagement.billing;
+package com.khoa.roommanagement.billing.contracts.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -6,6 +6,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.khoa.roommanagement.billing.contracts.dto.CreateRentalContractCommand;
+import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
+import com.khoa.roommanagement.billing.contracts.exception.ActiveRentalContractAlreadyExistsException;
+import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
