@@ -66,4 +66,40 @@ public class RentalContract {
 		contract.createdAt = Instant.now();
 		return contract;
 	}
+
+	public UUID getId() {
+		return id;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public int getPaymentDueDay() {
+		return paymentDueDay;
+	}
+
+	public long getRentAmount() {
+		return rentAmount;
+	}
+
+	public long getElectricityUnitPrice() {
+		return electricityUnitPrice;
+	}
+
+	public long getWaterFee() {
+		return waterFee;
+	}
+
+	public long getServiceFee() {
+		return serviceFee;
+	}
+
+	public RentalContractStatus getStatus() {
+		return status;
+	}
 }

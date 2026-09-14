@@ -20,4 +20,10 @@ public class RentalContractService {
 
 		return rentalContractRepository.save(RentalContract.createActive(command));
 	}
+
+	@Transactional(readOnly = true)
+	public RentalContract getActive() {
+		return rentalContractRepository.findByStatus(RentalContractStatus.ACTIVE)
+			.orElseThrow(RentalContractNotFoundException::new);
+	}
 }
