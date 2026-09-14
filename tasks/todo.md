@@ -28,11 +28,11 @@
 **Tiêu chí chấp nhận:**
 - [x] Không tạo được hai hợp đồng `ACTIVE`.
 - [x] Ngày, tiền và đơn giá không hợp lệ nhận lỗi có cấu trúc.
-- [ ] Người dùng tạo và xem lại hợp đồng trên điện thoại.
+- [x] Người dùng tạo và xem lại hợp đồng trên điện thoại.
 
 **Kiểm chứng:**
 - [x] Unit/integration test cho luật một hợp đồng active.
-- [ ] Manual: tạo hợp đồng từ giao diện và refresh vẫn còn dữ liệu.
+- [x] Manual: tạo hợp đồng từ giao diện và refresh vẫn còn dữ liệu.
 
 **Phụ thuộc:** Task 1.  
 **Tệp dự kiến:** module `billing`, migration hợp đồng, `frontend/src/features/contracts/`.  
