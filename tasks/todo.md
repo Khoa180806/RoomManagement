@@ -26,12 +26,12 @@
 **Mô tả:** Hoàn thiện migration, entity, API và form mobile cho một hợp đồng đang hiệu lực.
 
 **Tiêu chí chấp nhận:**
-- [ ] Không tạo được hai hợp đồng `ACTIVE`.
-- [ ] Ngày, tiền và đơn giá không hợp lệ nhận lỗi có cấu trúc.
+- [x] Không tạo được hai hợp đồng `ACTIVE`.
+- [x] Ngày, tiền và đơn giá không hợp lệ nhận lỗi có cấu trúc.
 - [ ] Người dùng tạo và xem lại hợp đồng trên điện thoại.
 
 **Kiểm chứng:**
-- [ ] Unit/integration test cho luật một hợp đồng active.
+- [x] Unit/integration test cho luật một hợp đồng active.
 - [ ] Manual: tạo hợp đồng từ giao diện và refresh vẫn còn dữ liệu.
 
 **Phụ thuộc:** Task 1.  
