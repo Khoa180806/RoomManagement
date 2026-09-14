@@ -25,6 +25,7 @@ services:
       DATABASE_USERNAME: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
       RECEIPT_STORAGE_PATH: /var/lib/room-management/receipts
+      ALLOWED_ORIGINS: http://localhost:${FRONTEND_PORT}
     ports:
       - "${BACKEND_PORT}:8080"
     volumes:
