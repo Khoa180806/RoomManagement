@@ -1,5 +1,6 @@
 # Công cụ và thư viện cài cục bộ
 .agents/
+.zcode
 node_modules/
 dist/
 build/
