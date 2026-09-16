@@ -15,7 +15,7 @@ import com.khoa.roommanagement.billing.bills.exception.ReadingNotFoundException;
 import com.khoa.roommanagement.billing.bills.service.BillService;
 import com.khoa.roommanagement.billing.contracts.dto.CreateRentalContractCommand;
 import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
-import com.khoa.roommanagement.billing.contracts.exception.ApiExceptionHandler;
+import com.khoa.roommanagement.common.exception.ApiExceptionHandler;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

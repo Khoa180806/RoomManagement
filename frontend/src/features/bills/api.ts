@@ -1,5 +1,4 @@
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
-
 export type ElectricityReading = {
   id: string;
   contractId: string;
@@ -7,7 +6,6 @@ export type ElectricityReading = {
   meterValue: number;
   recordedAt: string;
 };
-
 export type Bill = {
   id: string;
   contractId: string;
@@ -25,54 +23,55 @@ export type Bill = {
   dueDate: string;
   createdAt: string;
 };
-
 export type BillPage = {
   content: Bill[];
-  totalElements: number;
-  totalPages: number;
   number: number;
   size: number;
+  totalElements: number;
+  totalPages: number;
 };
-
+export type ReadingInput = {
+  period: string;
+  meterValue: string;
+};
 type ApiError = {
   error?: { code?: string; message?: string; details?: string[] };
 };
-
+export async function getElectricityReadings(): Promise<ElectricityReading[]> {
+  return request("/api/electricity-readings");
+}
 export async function recordElectricityReading(
-  period: string,
-  meterValue: number,
+  input: ReadingInput,
 ): Promise<ElectricityReading> {
-  return request<ElectricityReading>("/api/electricity-readings", {
+  return request("/api/electricity-readings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ period, meterValue }),
+    body: JSON.stringify({
+      period: input.period,
+      meterValue: Number(input.meterValue),
+    }),
   });
 }
-
-export async function getElectricityReadings(): Promise<ElectricityReading[]> {
-  return request<ElectricityReading[]>("/api/electricity-readings");
+export async function getBills(page = 0, size = 12): Promise<BillPage> {
+  return request(`/api/bills?page=${page}&size=${size}`);
 }
-
 export async function createBill(period: string): Promise<Bill> {
-  return request<Bill>("/api/bills", {
+  return request("/api/bills", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ period }),
   });
 }
-
-export async function getBills(page = 0, size = 12): Promise<BillPage> {
-  return request<BillPage>(`/api/bills?page=${page}&size=${size}`);
-}
-
-export async function getBillById(id: string): Promise<Bill> {
-  return request<Bill>(`/api/bills/${id}`);
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, init);
-  if (response.ok) return response.json() as Promise<T>;
+async function request(path: string, init?: RequestInit): Promise<any> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    signal: AbortSignal.timeout(10000),
+  });
+  if (response.ok) return response.json();
   const payload = (await response.json().catch(() => ({}))) as ApiError;
+  if (payload.error?.code === "CONTRACT_TERMINATED") {
+    throw new Error(payload.error.message ?? "Hợp đồng đã bị hủy.");
+  }
   throw new Error(
     payload.error?.details?.join(" ") ||
       payload.error?.message ||

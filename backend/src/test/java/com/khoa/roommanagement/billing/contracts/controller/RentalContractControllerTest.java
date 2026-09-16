@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.khoa.roommanagement.billing.contracts.exception.ApiExceptionHandler;
+import com.khoa.roommanagement.common.exception.ApiExceptionHandler;
 import com.khoa.roommanagement.billing.contracts.exception.ActiveRentalContractAlreadyExistsException;
 import com.khoa.roommanagement.billing.contracts.service.RentalContractService;
 import org.junit.jupiter.api.Test;

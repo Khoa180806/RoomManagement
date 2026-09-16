@@ -1,9 +1,13 @@
-package com.khoa.roommanagement.billing.contracts.exception;
+package com.khoa.roommanagement.common.exception;
 
 import com.khoa.roommanagement.billing.bills.exception.BillNotFoundException;
 import com.khoa.roommanagement.billing.bills.exception.DuplicateBillException;
 import com.khoa.roommanagement.billing.bills.exception.PreviousReadingNotFoundException;
 import com.khoa.roommanagement.billing.bills.exception.ReadingNotFoundException;
+import com.khoa.roommanagement.billing.contracts.exception.ActiveRentalContractAlreadyExistsException;
+import com.khoa.roommanagement.billing.contracts.exception.ApiErrorResponse;
+import com.khoa.roommanagement.billing.contracts.exception.ContractTerminatedException;
+import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
 import java.util.List;

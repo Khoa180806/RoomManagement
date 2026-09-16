@@ -45,10 +45,16 @@ async function request(
   path: string,
   init?: RequestInit,
 ): Promise<RentalContract> {
-  const response = await fetch(`${apiBaseUrl}${path}`, init);
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    signal: AbortSignal.timeout(10000),
+  });
   if (response.ok) return response.json() as Promise<RentalContract>;
   const payload = (await response.json().catch(() => ({}))) as ApiError;
   if (payload.error?.code === "NOT_FOUND") throw new Error("NOT_FOUND");
+  if (payload.error?.code === "CONTRACT_TERMINATED") {
+    throw new Error(payload.error.message ?? "Hợp đồng đã bị hủy.");
+  }
   throw new Error(
     payload.error?.details?.join(" ") ||
       payload.error?.message ||

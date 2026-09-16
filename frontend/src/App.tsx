@@ -66,8 +66,8 @@ function App() {
         setReadings(readingsData);
         setBills(billsData.content);
       })
-      .catch((requestError: Error) => {
-        if (requestError.message !== "NOT_FOUND")
+      .catch((requestError: unknown) => {
+        if (requestError instanceof Error && requestError.message !== "NOT_FOUND")
           setError("Không thể tải dữ liệu. Hãy thử lại sau.");
       })
       .finally(() => setIsLoading(false));
@@ -80,11 +80,40 @@ function App() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    // Client-side validation
+    const errors: string[] = [];
+    if (!form.startDate) errors.push("Ngày bắt đầu là bắt buộc");
+    if (!form.endDate) errors.push("Ngày kết thúc là bắt buộc");
+    if (form.startDate && form.endDate && form.endDate <= form.startDate) {
+      errors.push("Ngày kết thúc phải sau ngày bắt đầu");
+    }
+    if (!form.paymentDueDay || Number(form.paymentDueDay) < 1 || Number(form.paymentDueDay) > 28) {
+      errors.push("Ngày đến hạn phải từ 1 đến 28");
+    }
+    if (form.rentAmount === "" || Number(form.rentAmount) < 0) {
+      errors.push("Tiền phòng không được âm");
+    }
+    if (form.electricityUnitPrice === "" || Number(form.electricityUnitPrice) < 0) {
+      errors.push("Đơn giá điện không được âm");
+    }
+    if (form.waterFee === "" || Number(form.waterFee) < 0) {
+      errors.push("Tiền nước không được âm");
+    }
+    if (form.serviceFee === "" || Number(form.serviceFee) < 0) {
+      errors.push("Phí dịch vụ không được âm");
+    }
+
+    if (errors.length > 0) {
+      setError(errors.join(". "));
+      return;
+    }
+
     setIsSaving(true);
     try {
       const c = await createRentalContract(form);
       setContract(c);
-    } catch (requestError) {
+    } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -98,6 +127,22 @@ function App() {
   async function recordReading(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setReadingError(null);
+
+    // Client-side validation
+    const errors: string[] = [];
+    if (!readingPeriod) errors.push("Kỳ là bắt buộc");
+    if (!/^\d{4}-\d{2}$/.test(readingPeriod)) {
+      errors.push("Kỳ phải có định dạng YYYY-MM");
+    }
+    if (readingMeterValue === "" || Number(readingMeterValue) < 0) {
+      errors.push("Chỉ số điện không được âm");
+    }
+
+    if (errors.length > 0) {
+      setReadingError(errors.join(". "));
+      return;
+    }
+
     setIsRecordingReading(true);
     try {
       const reading = await recordElectricityReading(
@@ -106,7 +151,7 @@ function App() {
       );
       setReadings((prev) => [reading, ...prev]);
       setReadingMeterValue("");
-    } catch (requestError) {
+    } catch (requestError: unknown) {
       setReadingError(
         requestError instanceof Error
           ? requestError.message
@@ -120,11 +165,24 @@ function App() {
   async function createNewBill(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBillError(null);
+
+    // Client-side validation
+    const errors: string[] = [];
+    if (!billPeriod) errors.push("Kỳ là bắt buộc");
+    if (!/^\d{4}-\d{2}$/.test(billPeriod)) {
+      errors.push("Kỳ phải có định dạng YYYY-MM");
+    }
+
+    if (errors.length > 0) {
+      setBillError(errors.join(". "));
+      return;
+    }
+
     setIsCreatingBill(true);
     try {
       const bill = await createBill(billPeriod);
       setBills((prev) => [bill, ...prev]);
-    } catch (requestError) {
+    } catch (requestError: unknown) {
       setBillError(
         requestError instanceof Error
           ? requestError.message

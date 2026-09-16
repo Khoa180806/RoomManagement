@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.khoa.roommanagement.billing.contracts.exception.ApiExceptionHandler;
+import com.khoa.roommanagement.common.exception.ApiExceptionHandler;
 import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
 import com.khoa.roommanagement.billing.electricity.dto.ElectricityReadingResponse;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
