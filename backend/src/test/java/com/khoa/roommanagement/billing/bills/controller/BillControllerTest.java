@@ -1,5 +1,6 @@
 package com.khoa.roommanagement.billing.bills.controller;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -124,7 +125,7 @@ class BillControllerTest {
 		);
 		Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
 		Page<Bill> page = new PageImpl<>(java.util.List.of(bill), PageRequest.of(0, 12), 1);
-		when(billService.getBills(any())).thenReturn(page);
+		when(billService.getBills(anyInt(), anyInt())).thenReturn(page);
 
 		mockMvc.perform(get("/api/bills"))
 			.andExpect(status().isOk())

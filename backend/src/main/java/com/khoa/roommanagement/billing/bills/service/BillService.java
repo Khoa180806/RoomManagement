@@ -9,6 +9,7 @@ import com.khoa.roommanagement.billing.bills.exception.ReadingNotFoundException;
 import com.khoa.roommanagement.billing.bills.repository.BillRepository;
 import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
 import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
+import com.khoa.roommanagement.billing.contracts.exception.ContractTerminatedException;
 import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
@@ -23,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BillService {
+
+	private static final int MAX_PAGE_SIZE = 100;
 
 	private final BillRepository billRepository;
 	private final RentalContractRepository contractRepository;
@@ -71,14 +74,23 @@ public class BillService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Bill> getBills(Pageable pageable) {
+	public Page<Bill> getBills(int page, int size) {
+		int safeSize = Math.min(size, MAX_PAGE_SIZE);
 		RentalContract contract = getActiveContract();
-		return billRepository.findByContractIdOrderByPeriodDesc(contract.getId(), pageable);
+		return billRepository.findByContractIdOrderByPeriodDesc(
+			contract.getId(),
+			PageRequest.of(page, safeSize)
+		);
 	}
 
 	private RentalContract getActiveContract() {
 		return contractRepository.findByStatus(RentalContractStatus.ACTIVE)
-			.orElseThrow(RentalContractNotFoundException::new);
+			.orElseGet(() -> {
+				if (contractRepository.existsByStatus(RentalContractStatus.TERMINATED_FOR_NON_PAYMENT)) {
+					throw new ContractTerminatedException();
+				}
+				throw new RentalContractNotFoundException();
+			});
 	}
 
 	private ElectricityReading findPreviousReading(List<ElectricityReading> readings, String currentPeriod) {

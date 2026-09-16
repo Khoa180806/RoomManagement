@@ -2,6 +2,7 @@ package com.khoa.roommanagement.billing.electricity.service;
 
 import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
 import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
+import com.khoa.roommanagement.billing.contracts.exception.ContractTerminatedException;
 import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.electricity.dto.CreateReadingCommand;
@@ -31,7 +32,6 @@ public class ElectricityReadingService {
 	@Transactional
 	public ElectricityReading record(CreateReadingCommand command) {
 		RentalContract contract = getActiveContract();
-
 		UUID contractId = contract.getId();
 		String period = command.period();
 
@@ -62,6 +62,11 @@ public class ElectricityReadingService {
 
 	private RentalContract getActiveContract() {
 		return contractRepository.findByStatus(RentalContractStatus.ACTIVE)
-			.orElseThrow(RentalContractNotFoundException::new);
+			.orElseGet(() -> {
+				if (contractRepository.existsByStatus(RentalContractStatus.TERMINATED_FOR_NON_PAYMENT)) {
+					throw new ContractTerminatedException();
+				}
+				throw new RentalContractNotFoundException();
+			});
 	}
 }

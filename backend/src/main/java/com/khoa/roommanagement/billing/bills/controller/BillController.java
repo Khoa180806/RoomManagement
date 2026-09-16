@@ -6,7 +6,6 @@ import com.khoa.roommanagement.billing.bills.service.BillService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +42,6 @@ public class BillController {
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "12") int size
 	) {
-		return billService.getBills(PageRequest.of(page, size))
-			.map(BillResponse::from);
+		return billService.getBills(page, size).map(BillResponse::from);
 	}
 }
