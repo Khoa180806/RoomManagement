@@ -145,10 +145,10 @@ function App() {
 
     setIsRecordingReading(true);
     try {
-      const reading = await recordElectricityReading(
-        readingPeriod,
-        Number(readingMeterValue),
-      );
+      const reading = await recordElectricityReading({
+        period: readingPeriod,
+        meterValue: readingMeterValue,
+      });
       setReadings((prev) => [reading, ...prev]);
       setReadingMeterValue("");
     } catch (requestError: unknown) {
