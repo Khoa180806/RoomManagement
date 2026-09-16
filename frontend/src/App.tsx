@@ -6,6 +6,14 @@ import {
   type RentalContract,
   type RentalContractInput,
 } from "./features/contracts/api";
+import {
+  recordElectricityReading,
+  getElectricityReadings,
+  createBill,
+  getBills,
+  type ElectricityReading,
+  type Bill,
+} from "./features/bills/api";
 import "./App.css";
 
 const initialForm: RentalContractInput = {
@@ -23,6 +31,11 @@ const money = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 0,
 });
 
+function getCurrentPeriod(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function App() {
   const [contract, setContract] = useState<RentalContract | null>(null);
   const [form, setForm] = useState(initialForm);
@@ -30,24 +43,47 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Meter reading state
+  const [readings, setReadings] = useState<ElectricityReading[]>([]);
+  const [readingPeriod, setReadingPeriod] = useState(getCurrentPeriod);
+  const [readingMeterValue, setReadingMeterValue] = useState("");
+  const [readingError, setReadingError] = useState<string | null>(null);
+  const [isRecordingReading, setIsRecordingReading] = useState(false);
+
+  // Bill state
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [billPeriod, setBillPeriod] = useState(getCurrentPeriod);
+  const [billError, setBillError] = useState<string | null>(null);
+  const [isCreatingBill, setIsCreatingBill] = useState(false);
+
   useEffect(() => {
     getActiveRentalContract()
-      .then(setContract)
+      .then((c) => {
+        setContract(c);
+        return Promise.all([getElectricityReadings(), getBills()]);
+      })
+      .then(([readingsData, billsData]) => {
+        setReadings(readingsData);
+        setBills(billsData.content);
+      })
       .catch((requestError: Error) => {
         if (requestError.message !== "NOT_FOUND")
-          setError("Không thể tải hợp đồng. Hãy thử lại sau.");
+          setError("Không thể tải dữ liệu. Hãy thử lại sau.");
       })
       .finally(() => setIsLoading(false));
   }, []);
+
   function updateField(name: keyof RentalContractInput, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
   }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setIsSaving(true);
     try {
-      setContract(await createRentalContract(form));
+      const c = await createRentalContract(form);
+      setContract(c);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -59,6 +95,46 @@ function App() {
     }
   }
 
+  async function recordReading(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setReadingError(null);
+    setIsRecordingReading(true);
+    try {
+      const reading = await recordElectricityReading(
+        readingPeriod,
+        Number(readingMeterValue),
+      );
+      setReadings((prev) => [reading, ...prev]);
+      setReadingMeterValue("");
+    } catch (requestError) {
+      setReadingError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Không thể ghi chỉ số.",
+      );
+    } finally {
+      setIsRecordingReading(false);
+    }
+  }
+
+  async function createNewBill(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBillError(null);
+    setIsCreatingBill(true);
+    try {
+      const bill = await createBill(billPeriod);
+      setBills((prev) => [bill, ...prev]);
+    } catch (requestError) {
+      setBillError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Không thể tạo hóa đơn.",
+      );
+    } finally {
+      setIsCreatingBill(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -66,7 +142,7 @@ function App() {
           <span className="brand-mark">RM</span>
           <span>Nhà trọ của tôi</span>
         </a>
-        <span className="topbar-label">Thiết lập ban đầu</span>
+        <span className="topbar-label">Quản lý phòng trọ</span>
       </header>
       <section className="hero-band" aria-labelledby="page-title">
         <p className="eyebrow">Hợp đồng thuê</p>
@@ -84,7 +160,27 @@ function App() {
         {isLoading ? (
           <LoadingState />
         ) : contract ? (
-          <ContractCard contract={contract} />
+          <>
+            <ContractCard contract={contract} />
+            <MeterReadingForm
+              readings={readings}
+              period={readingPeriod}
+              meterValue={readingMeterValue}
+              error={readingError}
+              isSaving={isRecordingReading}
+              onPeriodChange={setReadingPeriod}
+              onMeterValueChange={setReadingMeterValue}
+              onSubmit={recordReading}
+            />
+            <BillForm
+              bills={bills}
+              period={billPeriod}
+              error={billError}
+              isSaving={isCreatingBill}
+              onPeriodChange={setBillPeriod}
+              onSubmit={createNewBill}
+            />
+          </>
         ) : (
           <ContractForm
             form={form}
@@ -252,6 +348,7 @@ function Field({
     </label>
   );
 }
+
 function ContractCard({ contract }: { contract: RentalContract }) {
   return (
     <section
@@ -287,6 +384,205 @@ function ContractCard({ contract }: { contract: RentalContract }) {
     </section>
   );
 }
+
+function MeterReadingForm({
+  readings,
+  period,
+  meterValue,
+  error,
+  isSaving,
+  onPeriodChange,
+  onMeterValueChange,
+  onSubmit,
+}: {
+  readings: ElectricityReading[];
+  period: string;
+  meterValue: string;
+  error: string | null;
+  isSaving: boolean;
+  onPeriodChange: (value: string) => void;
+  onMeterValueChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  const lastReading = readings[0];
+  return (
+    <section className="contract-panel" aria-labelledby="reading-title">
+      <div className="panel-heading">
+        <div>
+          <p className="section-label">Chỉ số điện</p>
+          <h2 id="reading-title">Ghi chỉ số điện</h2>
+        </div>
+      </div>
+      {lastReading && (
+        <div className="last-reading-info">
+          <span>Kỳ trước ({lastReading.period})</span>
+          <strong>{lastReading.meterValue.toLocaleString("vi-VN")} kWh</strong>
+        </div>
+      )}
+      <form onSubmit={onSubmit} noValidate>
+        <fieldset>
+          <legend>Chỉ số kỳ này</legend>
+          <div className="field-grid two-cols">
+            <label className="field" htmlFor="reading-period">
+              <span>Kỳ (YYYY-MM) <b aria-hidden="true">*</b></span>
+              <input
+                id="reading-period"
+                type="month"
+                value={period}
+                onChange={(e) => onPeriodChange(e.target.value)}
+                required
+              />
+            </label>
+            <label className="field" htmlFor="reading-meter">
+              <span>Chỉ số mới <b aria-hidden="true">*</b></span>
+              <input
+                id="reading-meter"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                value={meterValue}
+                onChange={(e) => onMeterValueChange(e.target.value)}
+                required
+                placeholder="kWh"
+              />
+              <small>kWh</small>
+            </label>
+          </div>
+        </fieldset>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="save-button" type="submit" disabled={isSaving}>
+          {isSaving ? "Đang ghi..." : "Ghi chỉ số"}
+        </button>
+      </form>
+      {readings.length > 0 && (
+        <div className="readings-list">
+          <h3>Lịch sử chỉ số</h3>
+          <ul>
+            {readings.map((r) => (
+              <li key={r.id}>
+                <span>{r.period}</span>
+                <strong>{r.meterValue.toLocaleString("vi-VN")} kWh</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function BillForm({
+  bills,
+  period,
+  error,
+  isSaving,
+  onPeriodChange,
+  onSubmit,
+}: {
+  bills: Bill[];
+  period: string;
+  error: string | null;
+  isSaving: boolean;
+  onPeriodChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <section className="contract-panel" aria-labelledby="bill-title">
+      <div className="panel-heading">
+        <div>
+          <p className="section-label">Hóa đơn</p>
+          <h2 id="bill-title">Tạo và xem hóa đơn</h2>
+        </div>
+      </div>
+      <form onSubmit={onSubmit} noValidate>
+        <fieldset>
+          <legend>Tạo hóa đơn mới</legend>
+          <label className="field" htmlFor="bill-period">
+            <span>Kỳ (YYYY-MM) <b aria-hidden="true">*</b></span>
+            <input
+              id="bill-period"
+              type="month"
+              value={period}
+              onChange={(e) => onPeriodChange(e.target.value)}
+              required
+            />
+            <small>Cần ghi chỉ số điện cho kỳ này trước khi tạo hóa đơn</small>
+          </label>
+        </fieldset>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="save-button" type="submit" disabled={isSaving}>
+          {isSaving ? "Đang tạo..." : "Tạo hóa đơn"}
+        </button>
+      </form>
+      {bills.length > 0 && (
+        <div className="bills-list">
+          <h3>Danh sách hóa đơn</h3>
+          {bills.map((bill) => (
+            <BillCard key={bill.id} bill={bill} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function BillCard({ bill }: { bill: Bill }) {
+  return (
+    <article className="bill-card">
+      <header className="bill-header">
+        <span className="bill-period">Kỳ {bill.period}</span>
+        <span className={`status-pill status-${bill.status.toLowerCase()}`}>
+          {bill.status}
+        </span>
+      </header>
+      <dl className="bill-breakdown">
+        <Cost label="Tiền phòng" value={bill.rentAmount} />
+        <div>
+          <dt>
+            Tiền điện ({bill.consumption.toLocaleString("vi-VN")} kWh ×{" "}
+            {money.format(bill.electricityUnitPrice)}/kWh)
+          </dt>
+          <dd>{money.format(bill.electricityAmount)}</dd>
+        </div>
+        <Cost label="Nước cố định" value={bill.waterFee} />
+        <Cost label="Dịch vụ cố định" value={bill.serviceFee} />
+      </dl>
+      <footer className="bill-footer">
+        <span>Tổng cộng</span>
+        <strong>{money.format(bill.totalAmount)}</strong>
+      </footer>
+      <p className="bill-due">
+        Hạn thanh toán: <strong>{bill.dueDate}</strong>
+      </p>
+      <details className="bill-details">
+        <summary>Chi tiết chỉ số</summary>
+        <dl>
+          <div>
+            <dt>Chỉ số cũ</dt>
+            <dd>{bill.oldMeterValue.toLocaleString("vi-VN")} kWh</dd>
+          </div>
+          <div>
+            <dt>Chỉ số mới</dt>
+            <dd>{bill.newMeterValue.toLocaleString("vi-VN")} kWh</dd>
+          </div>
+          <div>
+            <dt>Tiêu thụ</dt>
+            <dd>{bill.consumption.toLocaleString("vi-VN")} kWh</dd>
+          </div>
+        </dl>
+      </details>
+    </article>
+  );
+}
+
 function Cost({ label, value }: { label: string; value: number | string }) {
   return (
     <div>
@@ -295,6 +591,7 @@ function Cost({ label, value }: { label: string; value: number | string }) {
     </div>
   );
 }
+
 function LoadingState() {
   return (
     <section
