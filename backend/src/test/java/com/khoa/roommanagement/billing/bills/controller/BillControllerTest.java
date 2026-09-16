@@ -125,7 +125,7 @@ class BillControllerTest {
 		);
 		Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
 		Page<Bill> page = new PageImpl<>(java.util.List.of(bill), PageRequest.of(0, 12), 1);
-		when(billService.getBills(anyInt(), anyInt())).thenReturn(page);
+		when(billService.getBills(anyInt(), anyInt(), any())).thenReturn(page);
 
 		mockMvc.perform(get("/api/bills"))
 			.andExpect(status().isOk())

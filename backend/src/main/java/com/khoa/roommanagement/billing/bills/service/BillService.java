@@ -14,7 +14,6 @@ import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoun
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,13 +54,9 @@ public class BillService {
 			.findByContractIdAndPeriod(contractId, period)
 			.orElseThrow(() -> new ReadingNotFoundException(period));
 
-		List<ElectricityReading> allReadings = readingRepository
-			.findByContractIdOrderByPeriodDesc(contractId);
-
-		ElectricityReading previousReading = findPreviousReading(allReadings, period);
-		if (previousReading == null) {
-			throw new PreviousReadingNotFoundException(period);
-		}
+		ElectricityReading previousReading = readingRepository
+			.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, period)
+			.orElseThrow(() -> new PreviousReadingNotFoundException(period));
 
 		Bill bill = Bill.createFrom(contract, currentReading.getMeterValue(), previousReading.getMeterValue(), period);
 		return billRepository.save(bill);
@@ -74,9 +69,18 @@ public class BillService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Bill> getBills(int page, int size) {
+	public Page<Bill> getBills(int page, int size, String period) {
 		int safeSize = Math.min(size, MAX_PAGE_SIZE);
 		RentalContract contract = getActiveContract();
+		
+		if (period != null && !period.isEmpty()) {
+			return billRepository.findByContractIdAndPeriodOrderByPeriodDesc(
+				contract.getId(),
+				period,
+				PageRequest.of(page, safeSize)
+			);
+		}
+		
 		return billRepository.findByContractIdOrderByPeriodDesc(
 			contract.getId(),
 			PageRequest.of(page, safeSize)
@@ -91,14 +95,5 @@ public class BillService {
 				}
 				throw new RentalContractNotFoundException();
 			});
-	}
-
-	private ElectricityReading findPreviousReading(List<ElectricityReading> readings, String currentPeriod) {
-		for (ElectricityReading reading : readings) {
-			if (reading.getPeriod().compareTo(currentPeriod) < 0) {
-				return reading;
-			}
-		}
-		return null;
 	}
 }

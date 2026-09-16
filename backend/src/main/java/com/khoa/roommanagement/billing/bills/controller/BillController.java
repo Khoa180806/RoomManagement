@@ -40,8 +40,9 @@ public class BillController {
 	@GetMapping
 	public Page<BillResponse> getBills(
 		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "12") int size
+		@RequestParam(defaultValue = "12") int size,
+		@RequestParam(required = false) String period
 	) {
-		return billService.getBills(page, size).map(BillResponse::from);
+		return billService.getBills(page, size, period).map(BillResponse::from);
 	}
 }

@@ -14,4 +14,6 @@ public interface BillRepository extends JpaRepository<Bill, UUID> {
 	boolean existsByContractIdAndPeriod(UUID contractId, String period);
 
 	Page<Bill> findByContractIdOrderByPeriodDesc(UUID contractId, Pageable pageable);
+
+	Page<Bill> findByContractIdAndPeriodOrderByPeriodDesc(UUID contractId, String period, Pageable pageable);
 }
