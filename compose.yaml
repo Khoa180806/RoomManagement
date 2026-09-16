@@ -1,6 +1,7 @@
 services:
   database:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,6 +18,7 @@ services:
   backend:
     build:
       context: ./backend
+    restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
@@ -30,13 +32,20 @@ services:
       - "${BACKEND_PORT}:8080"
     volumes:
       - receipts-data:/var/lib/room-management/receipts
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   frontend:
     build:
       context: ./frontend
+    restart: unless-stopped
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "${FRONTEND_PORT}:80"
 
