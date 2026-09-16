@@ -487,6 +487,7 @@ function MeterReadingForm({
                 id="reading-period"
                 type="month"
                 value={period}
+                min="2024-01"
                 onChange={(e) => onPeriodChange(e.target.value)}
                 required
               />
@@ -565,6 +566,7 @@ function BillForm({
               id="bill-period"
               type="month"
               value={period}
+              min="2024-01"
               onChange={(e) => onPeriodChange(e.target.value)}
               required
             />
