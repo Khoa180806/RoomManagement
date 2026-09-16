@@ -4,13 +4,10 @@ CREATE TABLE electricity_readings (
     contract_id       UUID         NOT NULL REFERENCES rental_contracts (id),
     period            VARCHAR(7)   NOT NULL,
     meter_value       BIGINT       NOT NULL CHECK (meter_value >= 0),
-    recorded_at       TIMESTAMPTZ  NOT NULL,
+    recorded_at       TIMESTAMP WITH TIME ZONE  NOT NULL,
 
     CONSTRAINT uq_electricity_readings_contract_period
-        UNIQUE (contract_id, period),
-
-    CONSTRAINT chk_electricity_readings_period_format
-        CHECK (period ~ '^\d{4}-\d{2}$')
+        UNIQUE (contract_id, period)
 );
 
 -- Hóa đơn theo kỳ (snapshot toàn bộ giá tại thời điểm tạo)
@@ -29,13 +26,10 @@ CREATE TABLE bills (
     total_amount           BIGINT       NOT NULL CHECK (total_amount >= 0),
     status                 VARCHAR(20)  NOT NULL CHECK (status IN ('PENDING', 'PAID', 'OVERDUE')),
     due_date               DATE         NOT NULL,
-    created_at             TIMESTAMPTZ  NOT NULL,
+    created_at             TIMESTAMP WITH TIME ZONE  NOT NULL,
 
     CONSTRAINT uq_bills_contract_period
         UNIQUE (contract_id, period),
-
-    CONSTRAINT chk_bills_period_format
-        CHECK (period ~ '^\d{4}-\d{2}$'),
 
     CONSTRAINT chk_bills_new_gte_old
         CHECK (new_meter_value >= old_meter_value),
