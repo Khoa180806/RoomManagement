@@ -1,0 +1,66 @@
+package com.khoa.roommanagement.billing.electricity.service;
+
+import com.khoa.roommanagement.billing.contracts.entity.RentalContract;
+import com.khoa.roommanagement.billing.contracts.entity.RentalContractStatus;
+import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
+import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
+import com.khoa.roommanagement.billing.electricity.dto.CreateReadingCommand;
+import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
+import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
+import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
+import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class ElectricityReadingService {
+
+	private final ElectricityReadingRepository readingRepository;
+	private final RentalContractRepository contractRepository;
+
+	public ElectricityReadingService(
+		ElectricityReadingRepository readingRepository,
+		RentalContractRepository contractRepository
+	) {
+		this.readingRepository = readingRepository;
+		this.contractRepository = contractRepository;
+	}
+
+	@Transactional
+	public ElectricityReading record(CreateReadingCommand command) {
+		RentalContract contract = getActiveContract();
+
+		UUID contractId = contract.getId();
+		String period = command.period();
+
+		if (readingRepository.existsByContractIdAndPeriod(contractId, period)) {
+			throw new DuplicateReadingException(period);
+		}
+
+		List<ElectricityReading> existingReadings = readingRepository
+			.findByContractIdOrderByPeriodDesc(contractId);
+
+		if (!existingReadings.isEmpty()) {
+			long previousMeterValue = existingReadings.get(0).getMeterValue();
+			if (command.meterValue() < previousMeterValue) {
+				throw new MeterValueDecreasedException(command.meterValue(), previousMeterValue);
+			}
+		}
+
+		return readingRepository.save(
+			ElectricityReading.record(contractId, period, command.meterValue())
+		);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ElectricityReading> getReadingsByActiveContract() {
+		RentalContract contract = getActiveContract();
+		return readingRepository.findByContractIdOrderByPeriodDesc(contract.getId());
+	}
+
+	private RentalContract getActiveContract() {
+		return contractRepository.findByStatus(RentalContractStatus.ACTIVE)
+			.orElseThrow(RentalContractNotFoundException::new);
+	}
+}
