@@ -10,6 +10,7 @@ import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingExc
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
