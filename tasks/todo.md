@@ -43,13 +43,13 @@
 **Mô tả:** Ghi chỉ số điện, tính mức tiêu thụ và phát hành hóa đơn snapshot với tiền nước/phí dịch vụ cố định.
 
 **Tiêu chí chấp nhận:**
-- [ ] Không chấp nhận chỉ số thấp hơn chỉ số kỳ trước hoặc kỳ trùng.
-- [ ] Tổng tiền theo công thức và snapshot không đổi khi sửa giá kỳ sau.
-- [ ] Giao diện hiển thị chi tiết tiền phòng, tiền điện theo tiêu thụ, tiền nước cố định và phí dịch vụ cố định.
+- [x] Không chấp nhận chỉ số thấp hơn chỉ số kỳ trước hoặc kỳ trùng.
+- [x] Tổng tiền theo công thức và snapshot không đổi khi sửa giá kỳ sau.
+- [x] Giao diện hiển thị chi tiết tiền phòng, tiền điện theo tiêu thụ, tiền nước cố định và phí dịch vụ cố định.
 
 **Kiểm chứng:**
-- [ ] Unit test bảng tình huống công thức và các biên chỉ số.
-- [ ] E2E: hợp đồng → hai chỉ số → một hóa đơn.
+- [x] Unit test bảng tình huống công thức và các biên chỉ số.
+- [x] E2E: hợp đồng → hai chỉ số → một hóa đơn.
 
 **Phụ thuộc:** Task 2.  
 **Tệp dự kiến:** module `billing`, migration chỉ số/hóa đơn, `frontend/src/features/bills/`.  
@@ -57,8 +57,8 @@
 
 ## Checkpoint: Sau Tuần 1
 
-- [ ] Toàn bộ test hiện có và build chạy thành công.
-- [ ] Demo tạo một hóa đơn trên màn hình điện thoại.
+- [x] Toàn bộ test hiện có và build chạy thành công.
+- [x] Demo tạo một hóa đơn trên màn hình điện thoại.
 - [ ] Review người dùng xác nhận tổng tiền trùng phép tính tay.
 
 ## Tuần 2 — Thanh Toán Và Chứng Từ
