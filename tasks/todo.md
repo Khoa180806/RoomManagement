@@ -75,14 +75,14 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Hóa đơn chỉ được xác nhận một lần; retry cùng intent không tạo bản ghi thứ hai.
-- [ ] Trạng thái đúng hạn/trễ hạn được tính theo `paidAt` và hạn thanh toán.
-- [ ] Lịch sử hiển thị kỳ, số tiền, thời điểm và trạng thái.
+- [x] Hóa đơn chỉ được xác nhận một lần; retry cùng intent không tạo bản ghi thứ hai.
+- [x] Trạng thái đúng hạn/trễ hạn được tính theo `paidAt` và hạn thanh toán.
+- [x] Lịch sử hiển thị kỳ, số tiền, thời điểm và trạng thái.
 
 **Kiểm chứng:**
 
-- [ ] Unit test biên đúng hạn/trễ hạn.
-- [ ] Integration test idempotency và lỗi `409`/`422`.
+- [x] Unit test biên đúng hạn/trễ hạn.
+- [x] Integration test idempotency và lỗi `409`/`422`.
 
 **Phụ thuộc:** Task 3.  
 **Tệp dự kiến:** module `payments`, migration thanh toán, `frontend/src/features/payments/`.  
