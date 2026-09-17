@@ -590,10 +590,6 @@ function ContractCard({ contract }: { contract: RentalContract }) {
         <Cost label="Nước cố định" value={contract.waterFee} />
         <Cost label="Dịch vụ cố định" value={contract.serviceFee} />
       </dl>
-      <p className="due-note">
-        Đóng tiền trước ngày <strong>{contract.paymentDueDay}</strong> mỗi
-        tháng.
-      </p>
     </section>
   );
 }
