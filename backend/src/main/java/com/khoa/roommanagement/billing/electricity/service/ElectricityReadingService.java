@@ -9,7 +9,9 @@ import com.khoa.roommanagement.billing.electricity.dto.CreateReadingCommand;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
+import com.khoa.roommanagement.billing.electricity.exception.NonConsecutivePeriodException;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,19 @@ public class ElectricityReadingService {
 			.findByContractIdOrderByPeriodDesc(contractId);
 
 		if (!existingReadings.isEmpty()) {
+			String lastPeriod = existingReadings.get(0).getPeriod();
 			long previousMeterValue = existingReadings.get(0).getMeterValue();
+
+			// Kiểm tra period mới phải là kỳ tiếp theo
+			YearMonth lastYearMonth = YearMonth.parse(lastPeriod);
+			YearMonth expectedNextPeriod = lastYearMonth.plusMonths(1);
+			YearMonth requestedPeriod = YearMonth.parse(period);
+
+			if (!requestedPeriod.equals(expectedNextPeriod)) {
+				throw new NonConsecutivePeriodException(period, lastPeriod);
+			}
+
+			// Kiểm tra chỉ số không được giảm
 			if (command.meterValue() < previousMeterValue) {
 				throw new MeterValueDecreasedException(command.meterValue(), previousMeterValue);
 			}

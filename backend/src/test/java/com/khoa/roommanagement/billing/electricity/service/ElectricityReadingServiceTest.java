@@ -16,6 +16,7 @@ import com.khoa.roommanagement.billing.electricity.dto.CreateReadingCommand;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
+import com.khoa.roommanagement.billing.electricity.exception.NonConsecutivePeriodException;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -103,6 +104,23 @@ class ElectricityReadingServiceTest {
 
 		assertThatThrownBy(() -> readingService.record(new CreateReadingCommand("2026-10", 1000L)))
 			.isInstanceOf(MeterValueDecreasedException.class);
+
+		verify(readingRepository, never()).save(any());
+	}
+
+	@Test
+	void rejectsNonConsecutivePeriod() {
+		RentalContract contract = activeContract();
+		UUID contractId = contract.getId();
+
+		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
+			.thenReturn(Optional.of(contract));
+		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-12")).thenReturn(false);
+		ElectricityReading previous = ElectricityReading.record(contractId, "2026-09", 1200L);
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId)).thenReturn(List.of(previous));
+
+		assertThatThrownBy(() -> readingService.record(new CreateReadingCommand("2026-12", 1500L)))
+			.isInstanceOf(NonConsecutivePeriodException.class);
 
 		verify(readingRepository, never()).save(any());
 	}
