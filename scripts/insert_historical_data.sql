@@ -46,7 +46,7 @@ WHERE rc.status = 'ACTIVE';
 -- Bước 3: Insert bills với giá trị chính xác từ dữ liệu
 -- electricity_unit_price là giá trung bình (electricity_amount / consumption), có thể thay đổi theo kỳ
 INSERT INTO bills (id, contract_id, period, rent_amount, electricity_unit_price, water_fee, service_fee, old_meter_value, new_meter_value, consumption, electricity_amount, total_amount, status, due_date, created_at)
-SELECT gen_random_uuid(), rc.id, b.period, b.rent_amount, b.electricity_unit_price, b.water_fee, b.service_fee, b.old_meter_value, b.new_meter_value, b.consumption, b.electricity_amount, b.total_amount, 'PAID', b.due_date, NOW()
+SELECT gen_random_uuid(), rc.id, b.period, b.rent_amount, b.electricity_unit_price, b.water_fee, b.service_fee, b.old_meter_value, b.new_meter_value, b.consumption, b.electricity_amount, b.total_amount, 'PAID', b.due_date::DATE, NOW()
 FROM rental_contracts rc, (VALUES
   -- 2024 (Phòng 4.200.000, Điện 3500/kWh)
   ('2024-09', 4200000, 3500, 200000, 100000, 0, 78, 78, 273000, 4773000, '2024-09-05'),
