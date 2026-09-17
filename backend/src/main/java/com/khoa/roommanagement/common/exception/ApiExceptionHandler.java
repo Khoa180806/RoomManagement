@@ -11,6 +11,10 @@ import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoun
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
 import com.khoa.roommanagement.billing.electricity.exception.NonConsecutivePeriodException;
+import com.khoa.roommanagement.billing.payments.exception.BillAlreadyPaidException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictException;
+import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
+import com.khoa.roommanagement.billing.payments.exception.PaymentNotFoundException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +124,30 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handleBillNotFound(BillNotFoundException exception) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(ApiErrorResponse.of("BILL_NOT_FOUND", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(BillAlreadyPaidException.class)
+	ResponseEntity<ApiErrorResponse> handleBillAlreadyPaid(BillAlreadyPaidException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiErrorResponse.of("BILL_ALREADY_PAID", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(InvalidPaidAtException.class)
+	ResponseEntity<ApiErrorResponse> handleInvalidPaidAt(InvalidPaidAtException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("INVALID_PAID_AT", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(IdempotencyConflictException.class)
+	ResponseEntity<ApiErrorResponse> handleIdempotencyConflict(IdempotencyConflictException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiErrorResponse.of("IDEMPOTENCY_CONFLICT", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(PaymentNotFoundException.class)
+	ResponseEntity<ApiErrorResponse> handlePaymentNotFound(PaymentNotFoundException exception) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(ApiErrorResponse.of("PAYMENT_NOT_FOUND", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(Exception.class)

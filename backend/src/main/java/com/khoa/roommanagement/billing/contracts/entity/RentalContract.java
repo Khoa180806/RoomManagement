@@ -103,4 +103,11 @@ public class RentalContract {
 	public RentalContractStatus getStatus() {
 		return status;
 	}
+
+	public void setStatus(RentalContractStatus status) {
+		this.status = status;
+		if (status != RentalContractStatus.ACTIVE) {
+			this.activeContractMarker = null;
+		}
+	}
 }

@@ -7,12 +7,14 @@
 **Mô tả:** Tạo hai ứng dụng `backend` và `frontend`, Docker Compose cho PostgreSQL/backend/frontend, biến môi trường mẫu, kiểm tra format/lint/test cơ bản.
 
 **Tiêu chí chấp nhận:**
+
 - [x] Backend và frontend khởi động độc lập bằng lệnh tài liệu hóa.
 - [x] `docker compose up --build` khởi động được PostgreSQL, backend và frontend; database/chứng từ dùng volume bền vững.
 - [x] Không có token, mật khẩu hoặc đường dẫn máy cá nhân trong source code.
 - [x] Có migration rỗng đầu tiên và health endpoint nội bộ cho môi trường local.
 
 **Kiểm chứng:**
+
 - [x] `./mvnw verify -f backend/pom.xml` thành công.
 - [x] `npm --prefix frontend run build` thành công.
 - [x] `docker compose up --build` mở được giao diện và health endpoint.
@@ -26,11 +28,13 @@
 **Mô tả:** Hoàn thiện migration, entity, API và form mobile cho một hợp đồng đang hiệu lực.
 
 **Tiêu chí chấp nhận:**
+
 - [x] Không tạo được hai hợp đồng `ACTIVE`.
 - [x] Ngày, tiền và đơn giá không hợp lệ nhận lỗi có cấu trúc.
 - [x] Người dùng tạo và xem lại hợp đồng trên điện thoại.
 
 **Kiểm chứng:**
+
 - [x] Unit/integration test cho luật một hợp đồng active.
 - [x] Manual: tạo hợp đồng từ giao diện và refresh vẫn còn dữ liệu.
 
@@ -43,11 +47,13 @@
 **Mô tả:** Ghi chỉ số điện, tính mức tiêu thụ và phát hành hóa đơn snapshot với tiền nước/phí dịch vụ cố định.
 
 **Tiêu chí chấp nhận:**
+
 - [x] Không chấp nhận chỉ số thấp hơn chỉ số kỳ trước hoặc kỳ trùng.
 - [x] Tổng tiền theo công thức và snapshot không đổi khi sửa giá kỳ sau.
 - [x] Giao diện hiển thị chi tiết tiền phòng, tiền điện theo tiêu thụ, tiền nước cố định và phí dịch vụ cố định.
 
 **Kiểm chứng:**
+
 - [x] Unit test bảng tình huống công thức và các biên chỉ số.
 - [x] E2E: hợp đồng → hai chỉ số → một hóa đơn.
 
@@ -59,7 +65,7 @@
 
 - [x] Toàn bộ test hiện có và build chạy thành công.
 - [x] Demo tạo một hóa đơn trên màn hình điện thoại.
-- [ ] Review người dùng xác nhận tổng tiền trùng phép tính tay.
+- [x] Review người dùng xác nhận tổng tiền trùng phép tính tay.
 
 ## Tuần 2 — Thanh Toán Và Chứng Từ
 
@@ -68,11 +74,13 @@
 **Mô tả:** Tạo API/UI xác nhận thanh toán, idempotency và lịch sử phân trang.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Hóa đơn chỉ được xác nhận một lần; retry cùng intent không tạo bản ghi thứ hai.
 - [ ] Trạng thái đúng hạn/trễ hạn được tính theo `paidAt` và hạn thanh toán.
 - [ ] Lịch sử hiển thị kỳ, số tiền, thời điểm và trạng thái.
 
 **Kiểm chứng:**
+
 - [ ] Unit test biên đúng hạn/trễ hạn.
 - [ ] Integration test idempotency và lỗi `409`/`422`.
 
@@ -85,11 +93,13 @@
 **Mô tả:** Thêm lưu trữ local an toàn, API upload/stream và giao diện chọn ảnh.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Chỉ nhận JPEG, PNG, WebP không quá 5 MB và đã kiểm tra chữ ký tệp.
 - [ ] Metadata không lộ đường dẫn local; tệp lỗi không còn trên ổ đĩa.
 - [ ] Người dùng mở lại ảnh từ lịch sử thanh toán.
 
 **Kiểm chứng:**
+
 - [ ] Integration test loại tệp, kích thước và path traversal.
 - [ ] Manual: upload ảnh hợp lệ từ điện thoại và mở lại sau refresh.
 
@@ -110,11 +120,13 @@
 **Mô tả:** Tạo adapter Telegram tách biệt, kiểm tra biến môi trường và màn hình gửi tin nhắn thử.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Token/chat ID không được commit, log hoặc trả qua API.
 - [ ] Tin nhắn thử đến đúng chat cấu hình với timeout và lỗi an toàn.
 - [ ] Adapter được mock được trong test.
 
 **Kiểm chứng:**
+
 - [ ] Test adapter với mock HTTP server.
 - [ ] Manual: nhận một tin nhắn thử Telegram thật.
 
@@ -127,11 +139,13 @@
 **Mô tả:** Tạo cấu hình ngày nhắc, job hằng ngày, lịch sử reminder và retry giới hạn.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Tạo đúng loại nhắc trước hạn, quá hạn và hết hợp đồng theo cấu hình.
 - [ ] Chạy lại job không gửi trùng cùng một reminder trong ngày.
 - [ ] Ngày trễ thứ 1–3 có cảnh báo; ngày trễ thứ 4 chưa thanh toán sẽ hủy hợp đồng và chặn thanh toán mới.
 
 **Kiểm chứng:**
+
 - [ ] Unit test ngày nhắc, ngưỡng ba ngày và hủy ở ngày trễ thứ tư với clock cố định.
 - [ ] Integration test unique constraint và retry `FAILED`.
 
@@ -152,11 +166,13 @@
 **Mô tả:** Tinh chỉnh luồng chính, trạng thái tải/lỗi/trống, điều hướng và accessibility.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Luồng chính dùng tốt ở 375 px, 768 px và desktop.
 - [ ] Form có nhãn, lỗi dễ hiểu, focus rõ ràng và thao tác bằng bàn phím.
 - [ ] Không có nội dung bị cắt hoặc thao tác quan trọng chỉ dựa vào màu.
 
 **Kiểm chứng:**
+
 - [ ] Manual responsive ở ba kích thước.
 - [ ] Browser test kiểm tra console error và keyboard navigation.
 
@@ -169,11 +185,13 @@
 **Mô tả:** Bổ sung E2E, chạy build/lint/test, rà soát bảo mật upload và configuration.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Luồng hợp đồng → hóa đơn → thanh toán → chứng từ → nhắc thử chạy end-to-end.
 - [ ] Không còn lỗi mức critical/high từ native dependency audit có thể khai thác.
 - [ ] Build production thành công và không có lỗi console trong luồng chính.
 
 **Kiểm chứng:**
+
 - [ ] Backend/frontend test, lint, build chạy thành công.
 - [ ] Rà soát thủ công checklist bảo mật và accessibility.
 
@@ -186,11 +204,13 @@
 **Mô tả:** Viết README, hướng dẫn cấu hình local, ảnh demo và mô tả ngắn cho CV.
 
 **Tiêu chí chấp nhận:**
+
 - [ ] Người mới có thể chạy dự án theo README với `.env.example`.
 - [ ] README nêu rõ kiến trúc, giới hạn MVP và cách kiểm thử.
 - [ ] Có mô tả CV nhấn vào business logic, scheduler, Telegram và bảo mật upload.
 
 **Kiểm chứng:**
+
 - [ ] Thực hiện lại hướng dẫn trong môi trường sạch.
 - [ ] Review tài liệu không chứa bí mật hoặc dữ liệu chứng từ thật.
 

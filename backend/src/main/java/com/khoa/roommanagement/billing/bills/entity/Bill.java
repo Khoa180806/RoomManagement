@@ -153,4 +153,8 @@ public class Bill {
 	public boolean isPending() {
 		return status == BillStatus.PENDING;
 	}
+
+	public void setStatus(BillStatus status) {
+		this.status = status;
+	}
 }
