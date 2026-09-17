@@ -16,9 +16,9 @@ import com.khoa.roommanagement.billing.electricity.dto.CreateReadingCommand;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
-import com.khoa.roommanagement.billing.electricity.exception.MeterValueExceedsNextException;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -47,10 +47,7 @@ class ElectricityReadingServiceTest {
 		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
 			.thenReturn(Optional.of(contract));
 		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-09")).thenReturn(false);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-09"))
-			.thenReturn(Optional.empty());
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-09"))
-			.thenReturn(Optional.empty());
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId)).thenReturn(List.of());
 		when(readingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		ElectricityReading result = readingService.record(new CreateReadingCommand("2026-09", 1200L));
@@ -69,10 +66,7 @@ class ElectricityReadingServiceTest {
 			.thenReturn(Optional.of(contract));
 		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-10")).thenReturn(false);
 		ElectricityReading previous = ElectricityReading.record(contractId, "2026-09", 1000L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previous));
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-10"))
-			.thenReturn(Optional.empty());
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId)).thenReturn(List.of(previous));
 		when(readingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		ElectricityReading result = readingService.record(new CreateReadingCommand("2026-10", 1200L));
@@ -105,8 +99,7 @@ class ElectricityReadingServiceTest {
 			.thenReturn(Optional.of(contract));
 		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-10")).thenReturn(false);
 		ElectricityReading previous = ElectricityReading.record(contractId, "2026-09", 1200L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previous));
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId)).thenReturn(List.of(previous));
 
 		assertThatThrownBy(() -> readingService.record(new CreateReadingCommand("2026-10", 1000L)))
 			.isInstanceOf(MeterValueDecreasedException.class);
@@ -134,99 +127,13 @@ class ElectricityReadingServiceTest {
 			.thenReturn(Optional.of(contract));
 		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-10")).thenReturn(false);
 		ElectricityReading previous = ElectricityReading.record(contractId, "2026-09", 1200L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previous));
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-10"))
-			.thenReturn(Optional.empty());
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId)).thenReturn(List.of(previous));
 		when(readingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		ElectricityReading result = readingService.record(new CreateReadingCommand("2026-10", 1200L));
 
 		assertThat(result.getMeterValue()).isEqualTo(1200L);
 		verify(readingRepository).save(any());
-	}
-
-	@Test
-	void recordsRetroactiveReadingBetweenExistingReadings() {
-		RentalContract contract = activeContract();
-		UUID contractId = contract.getId();
-
-		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
-			.thenReturn(Optional.of(contract));
-		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-08")).thenReturn(false);
-		ElectricityReading previous = ElectricityReading.record(contractId, "2026-07", 800L);
-		ElectricityReading next = ElectricityReading.record(contractId, "2026-09", 1200L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-08"))
-			.thenReturn(Optional.of(previous));
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-08"))
-			.thenReturn(Optional.of(next));
-		when(readingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-		ElectricityReading result = readingService.record(new CreateReadingCommand("2026-08", 1000L));
-
-		assertThat(result.getMeterValue()).isEqualTo(1000L);
-		assertThat(result.getPeriod()).isEqualTo("2026-08");
-		verify(readingRepository).save(any());
-	}
-
-	@Test
-	void recordsRetroactiveReadingBeforeExistingReadings() {
-		RentalContract contract = activeContract();
-		UUID contractId = contract.getId();
-
-		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
-			.thenReturn(Optional.of(contract));
-		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-07")).thenReturn(false);
-		ElectricityReading next = ElectricityReading.record(contractId, "2026-08", 1000L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-07"))
-			.thenReturn(Optional.empty());
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-07"))
-			.thenReturn(Optional.of(next));
-		when(readingRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-		ElectricityReading result = readingService.record(new CreateReadingCommand("2026-07", 800L));
-
-		assertThat(result.getMeterValue()).isEqualTo(800L);
-		assertThat(result.getPeriod()).isEqualTo("2026-07");
-		verify(readingRepository).save(any());
-	}
-
-	@Test
-	void rejectsRetroactiveReadingWithMeterValueExceedingNext() {
-		RentalContract contract = activeContract();
-		UUID contractId = contract.getId();
-
-		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
-			.thenReturn(Optional.of(contract));
-		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-08")).thenReturn(false);
-		ElectricityReading next = ElectricityReading.record(contractId, "2026-09", 1000L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-08"))
-			.thenReturn(Optional.empty());
-		when(readingRepository.findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(contractId, "2026-08"))
-			.thenReturn(Optional.of(next));
-
-		assertThatThrownBy(() -> readingService.record(new CreateReadingCommand("2026-08", 1200L)))
-			.isInstanceOf(MeterValueExceedsNextException.class);
-
-		verify(readingRepository, never()).save(any());
-	}
-
-	@Test
-	void rejectsRetroactiveReadingWithMeterValueLowerThanPrevious() {
-		RentalContract contract = activeContract();
-		UUID contractId = contract.getId();
-
-		when(contractRepository.findByStatus(RentalContractStatus.ACTIVE))
-			.thenReturn(Optional.of(contract));
-		when(readingRepository.existsByContractIdAndPeriod(contractId, "2026-08")).thenReturn(false);
-		ElectricityReading previous = ElectricityReading.record(contractId, "2026-07", 1000L);
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-08"))
-			.thenReturn(Optional.of(previous));
-
-		assertThatThrownBy(() -> readingService.record(new CreateReadingCommand("2026-08", 800L)))
-			.isInstanceOf(MeterValueDecreasedException.class);
-
-		verify(readingRepository, never()).save(any());
 	}
 
 	private RentalContract activeContract() {

@@ -21,6 +21,7 @@ import com.khoa.roommanagement.billing.contracts.repository.RentalContractReposi
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -57,8 +58,8 @@ class BillServiceTest {
 		ElectricityReading previousReading = ElectricityReading.record(contractId, "2026-09", 1000L);
 		when(readingRepository.findByContractIdAndPeriod(contractId, "2026-10"))
 			.thenReturn(Optional.of(currentReading));
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previousReading));
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId))
+			.thenReturn(List.of(currentReading, previousReading));
 		when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		Bill bill = billService.create(new CreateBillCommand("2026-10"));
@@ -89,8 +90,8 @@ class BillServiceTest {
 		ElectricityReading previousReading = ElectricityReading.record(contractId, "2026-09", 1000L);
 		when(readingRepository.findByContractIdAndPeriod(contractId, "2026-10"))
 			.thenReturn(Optional.of(currentReading));
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previousReading));
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId))
+			.thenReturn(List.of(currentReading, previousReading));
 		when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		Bill bill = billService.create(new CreateBillCommand("2026-10"));
@@ -113,8 +114,8 @@ class BillServiceTest {
 		ElectricityReading previousReading = ElectricityReading.record(contractId, "2026-09", 1000L);
 		when(readingRepository.findByContractIdAndPeriod(contractId, "2026-10"))
 			.thenReturn(Optional.of(currentReading));
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previousReading));
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId))
+			.thenReturn(List.of(currentReading, previousReading));
 		when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		Bill bill = billService.create(new CreateBillCommand("2026-10"));
@@ -169,8 +170,8 @@ class BillServiceTest {
 		ElectricityReading currentReading = ElectricityReading.record(contractId, "2026-09", 1200L);
 		when(readingRepository.findByContractIdAndPeriod(contractId, "2026-09"))
 			.thenReturn(Optional.of(currentReading));
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-09"))
-			.thenReturn(Optional.empty());
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId))
+			.thenReturn(List.of(currentReading));
 
 		assertThatThrownBy(() -> billService.create(new CreateBillCommand("2026-09")))
 			.isInstanceOf(PreviousReadingNotFoundException.class);
@@ -202,8 +203,8 @@ class BillServiceTest {
 		ElectricityReading previousReading = ElectricityReading.record(contractId, "2026-09", 1000L);
 		when(readingRepository.findByContractIdAndPeriod(contractId, "2026-10"))
 			.thenReturn(Optional.of(currentReading));
-		when(readingRepository.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, "2026-10"))
-			.thenReturn(Optional.of(previousReading));
+		when(readingRepository.findByContractIdOrderByPeriodDesc(contractId))
+			.thenReturn(List.of(currentReading, previousReading));
 		when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
 		Bill bill = billService.create(new CreateBillCommand("2026-10"));

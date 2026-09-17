@@ -10,7 +10,6 @@ import com.khoa.roommanagement.billing.contracts.exception.ContractTerminatedExc
 import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoundException;
 import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingException;
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
-import com.khoa.roommanagement.billing.electricity.exception.MeterValueExceedsNextException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,12 +89,6 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handleMeterValueDecreased(MeterValueDecreasedException exception) {
 		return ResponseEntity.unprocessableEntity()
 				.body(ApiErrorResponse.of("METER_VALUE_DECREASED", exception.getMessage(), List.of()));
-	}
-
-	@ExceptionHandler(MeterValueExceedsNextException.class)
-	ResponseEntity<ApiErrorResponse> handleMeterValueExceedsNext(MeterValueExceedsNextException exception) {
-		return ResponseEntity.unprocessableEntity()
-				.body(ApiErrorResponse.of("METER_VALUE_EXCEEDS_NEXT", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(DuplicateBillException.class)

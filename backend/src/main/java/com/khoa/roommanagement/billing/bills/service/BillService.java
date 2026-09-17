@@ -14,6 +14,7 @@ import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoun
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.electricity.entity.ElectricityReading;
 import com.khoa.roommanagement.billing.electricity.repository.ElectricityReadingRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,9 +55,13 @@ public class BillService {
 			.findByContractIdAndPeriod(contractId, period)
 			.orElseThrow(() -> new ReadingNotFoundException(period));
 
-		ElectricityReading previousReading = readingRepository
-			.findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(contractId, period)
-			.orElseThrow(() -> new PreviousReadingNotFoundException(period));
+		List<ElectricityReading> allReadings = readingRepository
+			.findByContractIdOrderByPeriodDesc(contractId);
+
+		ElectricityReading previousReading = findPreviousReading(allReadings, period);
+		if (previousReading == null) {
+			throw new PreviousReadingNotFoundException(period);
+		}
 
 		Bill bill = Bill.createFrom(contract, currentReading.getMeterValue(), previousReading.getMeterValue(), period);
 		return billRepository.save(bill);
@@ -95,5 +100,14 @@ public class BillService {
 				}
 				throw new RentalContractNotFoundException();
 			});
+	}
+
+	private ElectricityReading findPreviousReading(List<ElectricityReading> readings, String currentPeriod) {
+		for (ElectricityReading reading : readings) {
+			if (reading.getPeriod().compareTo(currentPeriod) < 0) {
+				return reading;
+			}
+		}
+		return null;
 	}
 }
