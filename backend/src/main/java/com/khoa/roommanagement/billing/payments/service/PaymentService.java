@@ -14,6 +14,9 @@ import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictExc
 import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
 import com.khoa.roommanagement.billing.payments.repository.PaymentRepository;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -71,6 +74,14 @@ public class PaymentService {
 
         // Validate paidAt not in future
         if (paidAt.isAfter(Instant.now())) {
+            throw new InvalidPaidAtException();
+        }
+
+        // Validate paidAt >= period start date
+        YearMonth billPeriod = YearMonth.parse(bill.getPeriod());
+        LocalDate periodStart = billPeriod.atDay(1);
+        Instant periodStartInstant = periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        if (paidAt.isBefore(periodStartInstant)) {
             throw new InvalidPaidAtException();
         }
 

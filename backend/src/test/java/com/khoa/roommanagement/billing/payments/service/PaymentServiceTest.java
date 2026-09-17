@@ -50,7 +50,7 @@ class PaymentServiceTest {
     @Test
     void confirmsPaymentSuccessfully() {
         RentalContract contract = activeContract();
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         UUID billId = bill.getId();
         Instant paidAt = Instant.now().minusSeconds(3600);
         String idempotencyKey = "key-123";
@@ -76,7 +76,7 @@ class PaymentServiceTest {
     @Test
     void returnsExistingPaymentForSameIdempotencyKey() {
         RentalContract contract = activeContract();
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         UUID billId = bill.getId();
         Instant paidAt = Instant.now().minusSeconds(3600);
         String idempotencyKey = "key-123";
@@ -94,7 +94,7 @@ class PaymentServiceTest {
     @Test
     void throwsIdempotencyConflictForDifferentBill() {
         RentalContract contract = activeContract();
-        Bill bill1 = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill1 = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         Bill bill2 = Bill.createFrom(contract, 1300L, 1200L, "2026-11");
         UUID billId = bill2.getId();
         Instant paidAt = Instant.now().minusSeconds(3600);
@@ -111,7 +111,7 @@ class PaymentServiceTest {
     @Test
     void throwsBillAlreadyPaidException() {
         RentalContract contract = activeContract();
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         bill.setStatus(BillStatus.PAID);
         UUID billId = bill.getId();
         Instant paidAt = Instant.now().minusSeconds(3600);
@@ -128,7 +128,7 @@ class PaymentServiceTest {
     void throwsContractTerminatedException() {
         RentalContract contract = activeContract();
         contract.setStatus(RentalContractStatus.TERMINATED_FOR_NON_PAYMENT);
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         UUID billId = bill.getId();
         Instant paidAt = Instant.now().minusSeconds(3600);
 
@@ -144,7 +144,7 @@ class PaymentServiceTest {
     @Test
     void throwsInvalidPaidAtException() {
         RentalContract contract = activeContract();
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         UUID billId = bill.getId();
         Instant paidAt = Instant.now().plusSeconds(3600);
 
@@ -160,11 +160,12 @@ class PaymentServiceTest {
     @Test
     void calculatesOnTimePayment() {
         RentalContract contract = activeContract();
-        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-10");
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2024-01");
         UUID billId = bill.getId();
 
-        // On time: paidAt before due date (use past date for test)
-        Instant onTimePaidAt = Instant.now().minusSeconds(86400 * 365); // 1 year ago
+        // On time: paidAt on due date (2024-01-05)
+        Instant onTimePaidAt = LocalDate.of(2024, 1, 5).atStartOfDay()
+            .atZone(ZoneId.systemDefault()).toInstant();
 
         when(billRepository.findById(billId)).thenReturn(Optional.of(bill));
         when(contractRepository.findById(contract.getId())).thenReturn(Optional.of(contract));
