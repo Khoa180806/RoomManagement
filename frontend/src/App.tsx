@@ -297,6 +297,7 @@ function ContractForm({
               label="Ngày bắt đầu"
               name="startDate"
               type="date"
+              min="2024-01-01"
               value={form.startDate}
               onChange={onChange}
             />
@@ -304,6 +305,7 @@ function ContractForm({
               label="Ngày kết thúc"
               name="endDate"
               type="date"
+              min="2024-01-01"
               value={form.endDate}
               onChange={onChange}
             />

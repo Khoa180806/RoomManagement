@@ -15,4 +15,6 @@ public interface ElectricityReadingRepository extends JpaRepository<ElectricityR
 	boolean existsByContractIdAndPeriod(UUID contractId, String period);
 
 	Optional<ElectricityReading> findTopByContractIdAndPeriodLessThanOrderByPeriodDesc(UUID contractId, String period);
+
+	Optional<ElectricityReading> findTopByContractIdAndPeriodGreaterThanOrderByPeriodAsc(UUID contractId, String period);
 }
