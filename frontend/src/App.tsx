@@ -16,6 +16,57 @@ import {
 } from "./features/bills/api";
 import "./App.css";
 
+const VIETNAMESE_MONTHS = [
+  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
+  "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
+  "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+];
+
+const MIN_YEAR = 2024;
+const MAX_YEAR = new Date().getFullYear() + 5;
+
+function parsePeriod(period: string): { year: string; month: string } {
+  if (/^\d{4}-\d{2}$/.test(period)) {
+    const [year, month] = period.split("-");
+    return { year, month };
+  }
+  return { year: "", month: "" };
+}
+
+function parseDate(dateStr: string): { year: string; month: string; day: string } {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split("-");
+    return { year, month, day };
+  }
+  return { year: "", month: "", day: "" };
+}
+
+function makePeriod(year: string, month: string): string {
+  if (!year || !month) return "";
+  return `${year}-${month.padStart(2, "0")}`;
+}
+
+function makeDate(year: string, month: string, day: string): string {
+  if (!year || !month || !day) return "";
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function getYears(): string[] {
+  const years: string[] = [];
+  for (let y = MIN_YEAR; y <= MAX_YEAR; y++) {
+    years.push(String(y));
+  }
+  return years;
+}
+
+function getDays(): string[] {
+  const days: string[] = [];
+  for (let d = 1; d <= 31; d++) {
+    days.push(String(d));
+  }
+  return days;
+}
+
 const initialForm: RentalContractInput = {
   startDate: "",
   endDate: "",
@@ -81,7 +132,6 @@ function App() {
     event.preventDefault();
     setError(null);
 
-    // Client-side validation
     const errors: string[] = [];
     if (!form.startDate) errors.push("Ngày bắt đầu là bắt buộc");
     if (!form.endDate) errors.push("Ngày kết thúc là bắt buộc");
@@ -128,7 +178,6 @@ function App() {
     event.preventDefault();
     setReadingError(null);
 
-    // Client-side validation
     const errors: string[] = [];
     if (!readingPeriod) errors.push("Kỳ là bắt buộc");
     if (!/^\d{4}-\d{2}$/.test(readingPeriod)) {
@@ -166,7 +215,6 @@ function App() {
     event.preventDefault();
     setBillError(null);
 
-    // Client-side validation
     const errors: string[] = [];
     if (!billPeriod) errors.push("Kỳ là bắt buộc");
     if (!/^\d{4}-\d{2}$/.test(billPeriod)) {
@@ -265,6 +313,113 @@ function App() {
   );
 }
 
+/* ─── Custom Vietnamese Select Components ─── */
+
+function MonthSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const { year, month } = parsePeriod(value);
+  const years = getYears();
+
+  function handleYearChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(makePeriod(e.target.value, month));
+  }
+
+  function handleMonthChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(makePeriod(year, e.target.value));
+  }
+
+  return (
+    <div className="period-select">
+      <select
+        value={year}
+        onChange={handleYearChange}
+        aria-label="Năm"
+      >
+        <option value="">Năm</option>
+        {years.map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+      <select
+        value={month}
+        onChange={handleMonthChange}
+        aria-label="Tháng"
+      >
+        <option value="">Tháng</option>
+        {VIETNAMESE_MONTHS.map((name, i) => (
+          <option key={i + 1} value={String(i + 1)}>{name}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function DateSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const { year, month, day } = parseDate(value);
+  const years = getYears();
+  const days = getDays();
+
+  function handleYearChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(makeDate(e.target.value, month, day));
+  }
+
+  function handleMonthChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(makeDate(year, e.target.value, day));
+  }
+
+  function handleDayChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    onChange(makeDate(year, month, e.target.value));
+  }
+
+  return (
+    <div className="date-select">
+      <select
+        value={day}
+        onChange={handleDayChange}
+        aria-label="Ngày"
+      >
+        <option value="">Ngày</option>
+        {days.map((d) => (
+          <option key={d} value={d}>{d}</option>
+        ))}
+      </select>
+      <select
+        value={month}
+        onChange={handleMonthChange}
+        aria-label="Tháng"
+      >
+        <option value="">Tháng</option>
+        {VIETNAMESE_MONTHS.map((name, i) => (
+          <option key={i + 1} value={String(i + 1)}>{name}</option>
+        ))}
+      </select>
+      <select
+        value={year}
+        onChange={handleYearChange}
+        aria-label="Năm"
+      >
+        <option value="">Năm</option>
+        {years.map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+/* ─── Existing Components ─── */
+
 function ContractForm({
   form,
   error,
@@ -293,22 +448,20 @@ function ContractForm({
         <fieldset>
           <legend>Thời hạn</legend>
           <div className="field-grid two-cols">
-            <Field
-              label="Ngày bắt đầu"
-              name="startDate"
-              type="date"
-              min="2024-01-01"
-              value={form.startDate}
-              onChange={onChange}
-            />
-            <Field
-              label="Ngày kết thúc"
-              name="endDate"
-              type="date"
-              min="2024-01-01"
-              value={form.endDate}
-              onChange={onChange}
-            />
+            <label className="field" htmlFor="start-date">
+              <span>Ngày bắt đầu <b aria-hidden="true">*</b></span>
+              <DateSelect
+                value={form.startDate}
+                onChange={(v) => onChange("startDate", v)}
+              />
+            </label>
+            <label className="field" htmlFor="end-date">
+              <span>Ngày kết thúc <b aria-hidden="true">*</b></span>
+              <DateSelect
+                value={form.endDate}
+                onChange={(v) => onChange("endDate", v)}
+              />
+            </label>
           </div>
         </fieldset>
         <fieldset>
@@ -483,15 +636,11 @@ function MeterReadingForm({
         <fieldset>
           <legend>Chỉ số kỳ này</legend>
           <div className="field-grid two-cols">
-            <label className="field" htmlFor="reading-period">
-              <span>Kỳ (YYYY-MM) <b aria-hidden="true">*</b></span>
-              <input
-                id="reading-period"
-                type="month"
+            <label className="field">
+              <span>Kỳ <b aria-hidden="true">*</b></span>
+              <MonthSelect
                 value={period}
-                min="2024-01"
-                onChange={(e) => onPeriodChange(e.target.value)}
-                required
+                onChange={onPeriodChange}
               />
             </label>
             <label className="field" htmlFor="reading-meter">
@@ -562,15 +711,11 @@ function BillForm({
       <form onSubmit={onSubmit} noValidate>
         <fieldset>
           <legend>Tạo hóa đơn mới</legend>
-          <label className="field" htmlFor="bill-period">
-            <span>Kỳ (YYYY-MM) <b aria-hidden="true">*</b></span>
-            <input
-              id="bill-period"
-              type="month"
+          <label className="field">
+            <span>Kỳ <b aria-hidden="true">*</b></span>
+            <MonthSelect
               value={period}
-              min="2024-01"
-              onChange={(e) => onPeriodChange(e.target.value)}
-              required
+              onChange={onPeriodChange}
             />
             <small>Cần ghi chỉ số điện cho kỳ này trước khi tạo hóa đơn</small>
           </label>
@@ -667,4 +812,5 @@ function LoadingState() {
     </section>
   );
 }
+
 export default App;
