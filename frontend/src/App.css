@@ -590,3 +590,62 @@ legend {
   font-size: 0.8rem;
   margin: 0;
 }
+
+/* List Header with Toggle Button */
+.list-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.list-header h3 {
+  color: var(--ink);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.toggle-button {
+  background: transparent;
+  border: 1px solid var(--clay);
+  border-radius: 0.35rem;
+  color: var(--clay);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  transition: all 0.18s ease;
+}
+
+.toggle-button:hover {
+  background: var(--clay);
+  color: #fff;
+}
+
+.toggle-button:focus-visible {
+  outline: 3px solid var(--clay);
+  outline-offset: 2px;
+}
+
+/* Year Filter */
+.year-filter {
+  margin-bottom: 1rem;
+}
+
+.year-filter select {
+  appearance: none;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.35rem;
+  color: var(--ink);
+  font: inherit;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.year-filter select:focus {
+  border-color: var(--clay);
+  box-shadow: 0 0 0 3px var(--focus);
+  outline: 0;
+}

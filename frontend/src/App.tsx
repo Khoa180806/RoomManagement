@@ -70,7 +70,7 @@ function getDays(): string[] {
 const initialForm: RentalContractInput = {
   startDate: "",
   endDate: "",
-  paymentDueDay: "5",
+  paymentDueDay: "4",
   rentAmount: "",
   electricityUnitPrice: "",
   waterFee: "",
@@ -613,7 +613,30 @@ function MeterReadingForm({
   onMeterValueChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>("");
   const lastReading = readings[0];
+
+  // Lấy 3 tháng gần nhất
+  const recentReadings = readings.slice(0, 3);
+
+  // Nhóm theo năm
+  const readingsByYear = readings.reduce((acc, reading) => {
+    const { year } = parsePeriod(reading.period);
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(reading);
+    return acc;
+  }, {} as Record<string, ElectricityReading[]>);
+
+  const years = Object.keys(readingsByYear).sort((a, b) => b.localeCompare(a));
+
+  // Hiển thị: 3 tháng gần nhất hoặc tất cả (có thể lọc theo năm)
+  const displayReadings = expanded
+    ? selectedYear
+      ? readingsByYear[selectedYear] || []
+      : readings
+    : recentReadings;
+
   return (
     <section className="contract-panel" aria-labelledby="reading-title">
       <div className="panel-heading">
@@ -666,9 +689,34 @@ function MeterReadingForm({
       </form>
       {readings.length > 0 && (
         <div className="readings-list">
-          <h3>Lịch sử chỉ số</h3>
+          <div className="list-header">
+            <h3>Lịch sử chỉ số</h3>
+            <button
+              type="button"
+              className="toggle-button"
+              onClick={() => {
+                setExpanded(!expanded);
+                if (expanded) setSelectedYear("");
+              }}
+            >
+              {expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}
+            </button>
+          </div>
+          {expanded && years.length > 1 && (
+            <div className="year-filter">
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="">Tất cả các năm</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <ul>
-            {readings.map((r) => (
+            {displayReadings.map((r) => (
               <li key={r.id}>
                 <span>{r.period}</span>
                 <strong>{r.meterValue.toLocaleString("vi-VN")} kWh</strong>
@@ -696,6 +744,29 @@ function BillForm({
   onPeriodChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>("");
+
+  // Lấy 3 tháng gần nhất
+  const recentBills = bills.slice(0, 3);
+
+  // Nhóm theo năm
+  const billsByYear = bills.reduce((acc, bill) => {
+    const { year } = parsePeriod(bill.period);
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(bill);
+    return acc;
+  }, {} as Record<string, Bill[]>);
+
+  const years = Object.keys(billsByYear).sort((a, b) => b.localeCompare(a));
+
+  // Hiển thị: 3 tháng gần nhất hoặc tất cả (có thể lọc theo năm)
+  const displayBills = expanded
+    ? selectedYear
+      ? billsByYear[selectedYear] || []
+      : bills
+    : recentBills;
+
   return (
     <section className="contract-panel" aria-labelledby="bill-title">
       <div className="panel-heading">
@@ -727,8 +798,33 @@ function BillForm({
       </form>
       {bills.length > 0 && (
         <div className="bills-list">
-          <h3>Danh sách hóa đơn</h3>
-          {bills.map((bill) => (
+          <div className="list-header">
+            <h3>Danh sách hóa đơn</h3>
+            <button
+              type="button"
+              className="toggle-button"
+              onClick={() => {
+                setExpanded(!expanded);
+                if (expanded) setSelectedYear("");
+              }}
+            >
+              {expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}
+            </button>
+          </div>
+          {expanded && years.length > 1 && (
+            <div className="year-filter">
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="">Tất cả các năm</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {displayBills.map((bill) => (
             <BillCard key={bill.id} bill={bill} />
           ))}
         </div>
@@ -738,6 +834,10 @@ function BillForm({
 }
 
 function BillCard({ bill }: { bill: Bill }) {
+  // Tính hạn thanh toán: ngày 4 của tháng sau kỳ
+  const { year, month } = parsePeriod(bill.period);
+  const dueDate = `${year}-${month.padStart(2, "0")}-04`;
+
   return (
     <article className="bill-card">
       <header className="bill-header">
@@ -763,7 +863,7 @@ function BillCard({ bill }: { bill: Bill }) {
         <strong>{money.format(bill.totalAmount)}</strong>
       </footer>
       <p className="bill-due">
-        Hạn thanh toán: <strong>{bill.dueDate}</strong>
+        Hạn thanh toán: <strong>{dueDate}</strong>
       </p>
       <details className="bill-details">
         <summary>Chi tiết chỉ số</summary>
