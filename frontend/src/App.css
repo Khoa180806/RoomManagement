@@ -649,3 +649,89 @@ legend {
   box-shadow: 0 0 0 3px var(--focus);
   outline: 0;
 }
+
+/* Payment Form */
+.no-data {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+#bill-select,
+#paid-at,
+#payment-note {
+  appearance: none;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.35rem;
+  color: var(--ink);
+  font: inherit;
+  min-height: 3rem;
+  padding: 0.7rem 0.75rem;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+#bill-select:focus,
+#paid-at:focus,
+#payment-note:focus {
+  border-color: var(--clay);
+  box-shadow: 0 0 0 3px var(--focus);
+  outline: 0;
+}
+
+/* Payment History */
+.payments-list {
+  border-top: 1px solid var(--line);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.payments-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.payment-item {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+}
+
+.payment-info {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.payment-period {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.payment-date {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.payment-amount {
+  display: grid;
+  gap: 0.5rem;
+  text-align: right;
+}
+
+.payment-amount strong {
+  color: var(--ink);
+  font-feature-settings: "tnum";
+  font-size: 0.95rem;
+}
+
+.status-overdue {
+  background: #fff1ed;
+  border-color: var(--danger);
+  color: #8b2a12;
+}

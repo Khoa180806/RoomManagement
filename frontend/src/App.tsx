@@ -14,6 +14,11 @@ import {
   type ElectricityReading,
   type Bill,
 } from "./features/bills/api";
+import {
+  confirmPayment,
+  getPayments,
+  type Payment,
+} from "./features/payments/api";
 import "./App.css";
 
 const VIETNAMESE_MONTHS = [
@@ -107,15 +112,24 @@ function App() {
   const [billError, setBillError] = useState<string | null>(null);
   const [isCreatingBill, setIsCreatingBill] = useState(false);
 
+  // Payment state
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
+  const [paidAt, setPaidAt] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+
   useEffect(() => {
     getActiveRentalContract()
       .then((c) => {
         setContract(c);
-        return Promise.all([getElectricityReadings(), getBills()]);
+        return Promise.all([getElectricityReadings(), getBills(), getPayments()]);
       })
-      .then(([readingsData, billsData]) => {
+      .then(([readingsData, billsData, paymentsData]) => {
         setReadings(readingsData);
         setBills(billsData.content);
+        setPayments(paymentsData.content);
       })
       .catch((requestError: unknown) => {
         if (requestError instanceof Error && requestError.message !== "NOT_FOUND")
@@ -241,6 +255,45 @@ function App() {
     }
   }
 
+  async function confirmPaymentHandler(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPaymentError(null);
+
+    if (!selectedBillId) {
+      setPaymentError("Vui lòng chọn hóa đơn để thanh toán.");
+      return;
+    }
+
+    if (!paidAt) {
+      setPaymentError("Ngày thanh toán là bắt buộc.");
+      return;
+    }
+
+    setIsConfirmingPayment(true);
+    try {
+      const payment = await confirmPayment(selectedBillId, {
+        paidAt: new Date(paidAt).toISOString(),
+        note: paymentNote || undefined,
+        idempotencyKey: `payment-${selectedBillId}-${Date.now()}`,
+      });
+      setPayments((prev) => [payment, ...prev]);
+      setBills((prev) => prev.map(b => 
+        b.id === selectedBillId ? { ...b, status: "PAID" } : b
+      ));
+      setSelectedBillId(null);
+      setPaidAt("");
+      setPaymentNote("");
+    } catch (requestError: unknown) {
+      setPaymentError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Không thể xác nhận thanh toán.",
+      );
+    } finally {
+      setIsConfirmingPayment(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -285,6 +338,19 @@ function App() {
               isSaving={isCreatingBill}
               onPeriodChange={setBillPeriod}
               onSubmit={createNewBill}
+            />
+            <PaymentForm
+              bills={bills}
+              payments={payments}
+              selectedBillId={selectedBillId}
+              paidAt={paidAt}
+              note={paymentNote}
+              error={paymentError}
+              isSaving={isConfirmingPayment}
+              onBillSelect={setSelectedBillId}
+              onPaidAtChange={setPaidAt}
+              onNoteChange={setPaymentNote}
+              onSubmit={confirmPaymentHandler}
             />
           </>
         ) : (
@@ -830,6 +896,146 @@ function BillForm({
         </div>
       )}
     </section>
+  );
+}
+
+function PaymentForm({
+  bills,
+  payments,
+  selectedBillId,
+  paidAt,
+  note,
+  error,
+  isSaving,
+  onBillSelect,
+  onPaidAtChange,
+  onNoteChange,
+  onSubmit,
+}: {
+  bills: Bill[];
+  payments: Payment[];
+  selectedBillId: string | null;
+  paidAt: string;
+  note: string;
+  error: string | null;
+  isSaving: boolean;
+  onBillSelect: (billId: string | null) => void;
+  onPaidAtChange: (value: string) => void;
+  onNoteChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  const pendingBills = bills.filter((b) => b.status === "PENDING");
+
+  return (
+    <section className="contract-panel" aria-labelledby="payment-title">
+      <div className="panel-heading">
+        <div>
+          <p className="section-label">Thanh toán</p>
+          <h2 id="payment-title">Xác nhận thanh toán</h2>
+        </div>
+      </div>
+      {pendingBills.length === 0 ? (
+        <p className="no-data">Không có hóa đơn nào chờ thanh toán.</p>
+      ) : (
+        <form onSubmit={onSubmit} noValidate>
+          <fieldset>
+            <legend>Chọn hóa đơn</legend>
+            <label className="field" htmlFor="bill-select">
+              <span>Hóa đơn <b aria-hidden="true">*</b></span>
+              <select
+                id="bill-select"
+                value={selectedBillId || ""}
+                onChange={(e) => onBillSelect(e.target.value || null)}
+                required
+              >
+                <option value="">-- Chọn hóa đơn --</option>
+                {pendingBills.map((bill) => (
+                  <option key={bill.id} value={bill.id}>
+                    Kỳ {bill.period} - {money.format(bill.totalAmount)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Thông tin thanh toán</legend>
+            <div className="field-grid two-cols">
+              <label className="field" htmlFor="paid-at">
+                <span>Ngày thanh toán <b aria-hidden="true">*</b></span>
+                <input
+                  id="paid-at"
+                  type="date"
+                  value={paidAt}
+                  onChange={(e) => onPaidAtChange(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </label>
+              <label className="field" htmlFor="payment-note">
+                <span>Ghi chú</span>
+                <input
+                  id="payment-note"
+                  type="text"
+                  value={note}
+                  onChange={(e) => onNoteChange(e.target.value)}
+                  placeholder="Không bắt buộc"
+                />
+              </label>
+            </div>
+          </fieldset>
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button className="save-button" type="submit" disabled={isSaving || !selectedBillId}>
+            {isSaving ? "Đang xác nhận..." : "Xác nhận thanh toán"}
+          </button>
+        </form>
+      )}
+      {payments.length > 0 && <PaymentHistory payments={payments} />}
+    </section>
+  );
+}
+
+function PaymentHistory({ payments }: { payments: Payment[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const recentPayments = payments.slice(0, 3);
+  const displayPayments = expanded ? payments : recentPayments;
+
+  return (
+    <div className="payments-list">
+      <div className="list-header">
+        <h3>Lịch sử thanh toán</h3>
+        {payments.length > 3 && (
+          <button
+            type="button"
+            className="toggle-button"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}
+          </button>
+        )}
+      </div>
+      <ul>
+        {displayPayments.map((p) => (
+          <li key={p.id} className="payment-item">
+            <div className="payment-info">
+              <span className="payment-period">Kỳ {p.bill.period}</span>
+              <span className="payment-date">
+                {new Date(p.paidAt).toLocaleDateString("vi-VN")}
+              </span>
+            </div>
+            <div className="payment-amount">
+              <strong>{money.format(p.bill.totalAmount)}</strong>
+              <span className={`status-pill ${p.onTime ? "status-paid" : "status-overdue"}`}>
+                {p.onTime ? "Đúng hạn" : "Trễ hạn"}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
