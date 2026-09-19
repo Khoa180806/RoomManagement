@@ -17,7 +17,7 @@ public class Receipt {
 	@Id
 	private UUID id;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "payment_id", nullable = false, unique = true)
 	private Payment payment;
 
