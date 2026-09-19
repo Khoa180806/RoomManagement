@@ -1,4 +1,5 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+import { request } from "../../shared/api/client";
+
 export type ElectricityReading = {
   id: string;
   contractId: string;
@@ -34,16 +35,13 @@ export type ReadingInput = {
   period: string;
   meterValue: string;
 };
-type ApiError = {
-  error?: { code?: string; message?: string; details?: string[] };
-};
 export async function getElectricityReadings(): Promise<ElectricityReading[]> {
-  return request("/api/electricity-readings");
+  return request<ElectricityReading[]>("/api/electricity-readings");
 }
 export async function recordElectricityReading(
   input: ReadingInput,
 ): Promise<ElectricityReading> {
-  return request("/api/electricity-readings", {
+  return request<ElectricityReading>("/api/electricity-readings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -53,28 +51,16 @@ export async function recordElectricityReading(
   });
 }
 export async function getBills(page = 0, size = 12): Promise<BillPage> {
-  return request(`/api/bills?page=${page}&size=${size}`);
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+  return request<BillPage>(`/api/bills?${params.toString()}`);
 }
 export async function createBill(period: string): Promise<Bill> {
-  return request("/api/bills", {
+  return request<Bill>("/api/bills", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ period }),
   });
-}
-async function request(path: string, init?: RequestInit): Promise<any> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    signal: AbortSignal.timeout(10000),
-  });
-  if (response.ok) return response.json();
-  const payload = (await response.json().catch(() => ({}))) as ApiError;
-  if (payload.error?.code === "CONTRACT_TERMINATED") {
-    throw new Error(payload.error.message ?? "Hợp đồng đã bị hủy.");
-  }
-  throw new Error(
-    payload.error?.details?.join(" ") ||
-      payload.error?.message ||
-      "Không thể kết nối đến máy chủ.",
-  );
 }

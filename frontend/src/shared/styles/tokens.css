@@ -1,0 +1,43 @@
+:root {
+  --paper: #fffdfa;
+  --sand: #f4efe5;
+  --ink: #29271f;
+  --muted: #6f6a5f;
+  --line: #ded7ca;
+  --line-strong: #c6bdaf;
+  --clay: #ae5434;
+  --focus: rgba(174, 84, 52, 0.2);
+  --danger: #c84a27;
+  --danger-bg: #fff1ed;
+  --danger-ink: #8b2a12;
+  --success-bg: #e6f1e9;
+  --success-border: #aac7b1;
+  --success-ink: #285b36;
+  --warning-bg: #fff7e6;
+  --warning-border: #f5c542;
+  --warning-ink: #8b6d12;
+  --font-body: Manrope, sans-serif;
+  --font-display: Fraunces, serif;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-sand: var(--sand);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-clay: var(--clay);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-ink: var(--danger-ink);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-success-ink: var(--success-ink);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-border: var(--warning-border);
+  --color-warning-ink: var(--warning-ink);
+  --font-body: var(--font-body);
+  --font-display: var(--font-display);
+}

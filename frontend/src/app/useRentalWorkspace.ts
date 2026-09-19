@@ -1,0 +1,213 @@
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  createRentalContract,
+  getActiveRentalContract,
+  type RentalContract,
+  type RentalContractInput,
+} from "../features/contracts/api";
+import { validateRentalContract } from "../features/contracts/validation";
+import {
+  createBill,
+  getBills,
+  getElectricityReadings,
+  recordElectricityReading,
+  type Bill,
+  type ElectricityReading,
+} from "../features/bills/api";
+import { validateMeterValue, validatePeriod } from "../features/bills/validation";
+import { confirmPayment, getPayments, type Payment } from "../features/payments/api";
+import { ApiRequestError } from "../shared/api/errors";
+import { getCurrentPeriod } from "../shared/lib/date";
+
+const initialForm: RentalContractInput = {
+  startDate: "",
+  endDate: "",
+  paymentDueDay: "4",
+  rentAmount: "",
+  electricityUnitPrice: "",
+  waterFee: "",
+  serviceFee: "",
+};
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
+export function useRentalWorkspace() {
+  const [contract, setContract] = useState<RentalContract | null>(null);
+  const [form, setForm] = useState<RentalContractInput>(initialForm);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [readings, setReadings] = useState<ElectricityReading[]>([]);
+  const [readingPeriod, setReadingPeriod] = useState(getCurrentPeriod);
+  const [readingMeterValue, setReadingMeterValue] = useState("");
+  const [readingError, setReadingError] = useState<string | null>(null);
+  const [isRecordingReading, setIsRecordingReading] = useState(false);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [billPeriod, setBillPeriod] = useState(getCurrentPeriod);
+  const [billError, setBillError] = useState<string | null>(null);
+  const [isCreatingBill, setIsCreatingBill] = useState(false);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
+  const [paidAt, setPaidAt] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
+    getActiveRentalContract()
+      .then((activeContract) => {
+        setContract(activeContract);
+        return Promise.all([
+          getElectricityReadings(),
+          getBills(0, 100),
+          getPayments(),
+        ]);
+      })
+      .then(([readingsData, billsData, paymentsData]) => {
+        setReadings(readingsData);
+        setBills(billsData.content);
+        setPayments(paymentsData.content);
+      })
+      .catch((requestError: unknown) => {
+        if (!(requestError instanceof ApiRequestError && requestError.code === "NOT_FOUND")) {
+          setError("Không thể tải dữ liệu. Hãy thử lại sau.");
+        }
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  function updateField(name: keyof RentalContractInput, value: string) {
+    setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  async function submitContract(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    const validationError = validateRentalContract(form);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      setContract(await createRentalContract(form));
+    } catch (requestError: unknown) {
+      setError(getErrorMessage(requestError, "Không thể lưu hợp đồng."));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function recordReading(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setReadingError(null);
+    const errors = [validatePeriod(readingPeriod), validateMeterValue(readingMeterValue)].filter(Boolean);
+    if (errors.length > 0) {
+      setReadingError(errors.join(". "));
+      return;
+    }
+
+    setIsRecordingReading(true);
+    try {
+      const reading = await recordElectricityReading({ period: readingPeriod, meterValue: readingMeterValue });
+      setReadings((current) => [reading, ...current]);
+      setReadingMeterValue("");
+    } catch (requestError: unknown) {
+      setReadingError(getErrorMessage(requestError, "Không thể ghi chỉ số."));
+    } finally {
+      setIsRecordingReading(false);
+    }
+  }
+
+  async function createNewBill(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBillError(null);
+    const validationError = validatePeriod(billPeriod);
+    if (validationError) {
+      setBillError(validationError);
+      return;
+    }
+
+    setIsCreatingBill(true);
+    try {
+      const bill = await createBill(billPeriod);
+      setBills((current) => [bill, ...current]);
+    } catch (requestError: unknown) {
+      setBillError(getErrorMessage(requestError, "Không thể tạo hóa đơn."));
+    } finally {
+      setIsCreatingBill(false);
+    }
+  }
+
+  async function confirmPaymentHandler(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPaymentError(null);
+    if (!selectedBillId) {
+      setPaymentError("Vui lòng chọn hóa đơn để thanh toán.");
+      return;
+    }
+    if (!paidAt) {
+      setPaymentError("Ngày thanh toán là bắt buộc.");
+      return;
+    }
+
+    setIsConfirmingPayment(true);
+    try {
+      const payment = await confirmPayment(selectedBillId, {
+        paidAt: new Date(paidAt).toISOString(),
+        note: paymentNote || undefined,
+        idempotencyKey: `payment-${selectedBillId}-${Date.now()}`,
+      });
+      setPayments((current) => [payment, ...current]);
+      setBills((current) => current.map((bill) => bill.id === selectedBillId ? { ...bill, status: "PAID" } : bill));
+      setSelectedBillId(null);
+      setPaidAt("");
+      setPaymentNote("");
+    } catch (requestError: unknown) {
+      setPaymentError(getErrorMessage(requestError, "Không thể xác nhận thanh toán."));
+    } finally {
+      setIsConfirmingPayment(false);
+    }
+  }
+
+  return {
+    contract,
+    form,
+    isLoading,
+    isSaving,
+    error,
+    readings,
+    readingPeriod,
+    readingMeterValue,
+    readingError,
+    isRecordingReading,
+    bills,
+    billPeriod,
+    billError,
+    isCreatingBill,
+    payments,
+    selectedBillId,
+    paidAt,
+    paymentNote,
+    paymentError,
+    isConfirmingPayment,
+    updateField,
+    submitContract,
+    recordReading,
+    createNewBill,
+    confirmPaymentHandler,
+    setReadingPeriod,
+    setReadingMeterValue,
+    setBillPeriod,
+    setSelectedBillId,
+    setPaidAt,
+    setPaymentNote,
+  };
+}

@@ -1,36 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap");
-:root {
-  --paper: #fffdfa;
-  --sand: #f4efe5;
-  --ink: #29271f;
-  --muted: #6f6a5f;
-  --line: #ded7ca;
-  --line-strong: #c6bdaf;
-  --clay: #ae5434;
-  --focus: rgba(174, 84, 52, 0.2);
-  --danger: #c84a27;
-  --font-body: Manrope, sans-serif;
-  --font-display: Fraunces, serif;
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  background: linear-gradient(135deg, #f8f5ee 0%, #fffdfa 42%, #f5eee5 100%);
-  margin: 0;
-  min-width: 320px;
-}
-button,
-input {
-  font: inherit;
-}
-button {
-  touch-action: manipulation;
-}
-#root {
-  min-height: 100dvh;
-}
+@import "tailwindcss/theme.css" layer(theme);
+@import "./shared/styles/tokens.css";
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./shared/styles/globals.css";

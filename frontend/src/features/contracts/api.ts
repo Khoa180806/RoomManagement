@@ -1,4 +1,5 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+import { request } from "../../shared/api/client";
+
 export type RentalContract = {
   id: string;
   startDate: string;
@@ -10,6 +11,7 @@ export type RentalContract = {
   serviceFee: number;
   status: "ACTIVE";
 };
+
 export type RentalContractInput = {
   startDate: string;
   endDate: string;
@@ -19,16 +21,13 @@ export type RentalContractInput = {
   waterFee: string;
   serviceFee: string;
 };
-type ApiError = {
-  error?: { code?: string; message?: string; details?: string[] };
-};
+
 export async function getActiveRentalContract(): Promise<RentalContract> {
-  return request("/api/contracts/active");
+  return request<RentalContract>("/api/contracts/active");
 }
-export async function createRentalContract(
-  input: RentalContractInput,
-): Promise<RentalContract> {
-  return request("/api/contracts", {
+
+export async function createRentalContract(input: RentalContractInput): Promise<RentalContract> {
+  return request<RentalContract>("/api/contracts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -40,24 +39,4 @@ export async function createRentalContract(
       serviceFee: Number(input.serviceFee),
     }),
   });
-}
-async function request(
-  path: string,
-  init?: RequestInit,
-): Promise<RentalContract> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    signal: AbortSignal.timeout(10000),
-  });
-  if (response.ok) return response.json() as Promise<RentalContract>;
-  const payload = (await response.json().catch(() => ({}))) as ApiError;
-  if (payload.error?.code === "NOT_FOUND") throw new Error("NOT_FOUND");
-  if (payload.error?.code === "CONTRACT_TERMINATED") {
-    throw new Error(payload.error.message ?? "Hợp đồng đã bị hủy.");
-  }
-  throw new Error(
-    payload.error?.details?.join(" ") ||
-      payload.error?.message ||
-      "Không thể kết nối đến máy chủ.",
-  );
 }
