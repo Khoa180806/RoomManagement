@@ -129,7 +129,7 @@ function App() {
     getActiveRentalContract()
       .then((c) => {
         setContract(c);
-        return Promise.all([getElectricityReadings(), getBills(), getPayments()]);
+        return Promise.all([getElectricityReadings(), getBills(0, 100), getPayments()]);
       })
       .then(([readingsData, billsData, paymentsData]) => {
         setReadings(readingsData);
@@ -723,6 +723,7 @@ function MeterReadingForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [selectedYear, setSelectedYear] = useState<string>("");
   const lastReading = readings[0];
 
@@ -739,11 +740,17 @@ function MeterReadingForm({
 
   const years = Object.keys(readingsByYear).sort((a, b) => b.localeCompare(a));
 
-  // Hiển thị: 3 tháng gần nhất hoặc tất cả (có thể lọc theo năm)
-  const displayReadings = expanded
+  // Hiển thị: 3 tháng gần nhất hoặc tất cả theo từng trang 6 phần tử
+  const pageSize = 6;
+  const filteredReadings = expanded
     ? selectedYear
       ? readingsByYear[selectedYear] || []
       : readings
+    : recentReadings;
+  const totalPages = Math.max(1, Math.ceil(filteredReadings.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const displayReadings = expanded
+    ? filteredReadings.slice(safePage * pageSize, (safePage + 1) * pageSize)
     : recentReadings;
 
   return (
@@ -805,6 +812,7 @@ function MeterReadingForm({
               className="toggle-button"
               onClick={() => {
                 setExpanded(!expanded);
+                setCurrentPage(0);
                 if (expanded) setSelectedYear("");
               }}
             >
@@ -815,7 +823,10 @@ function MeterReadingForm({
             <div className="year-filter">
               <select
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setCurrentPage(0);
+                }}
               >
                 <option value="">Tất cả các năm</option>
                 {years.map((y) => (
@@ -832,6 +843,13 @@ function MeterReadingForm({
               </li>
             ))}
           </ul>
+          {expanded && totalPages > 1 && (
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       )}
     </section>
@@ -854,6 +872,7 @@ function BillForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
   const [selectedYear, setSelectedYear] = useState<string>("");
 
   // Lấy 3 tháng gần nhất
@@ -869,11 +888,17 @@ function BillForm({
 
   const years = Object.keys(billsByYear).sort((a, b) => b.localeCompare(a));
 
-  // Hiển thị: 3 tháng gần nhất hoặc tất cả (có thể lọc theo năm)
-  const displayBills = expanded
+  // Hiển thị: 3 tháng gần nhất hoặc tất cả theo từng trang 6 phần tử
+  const pageSize = 6;
+  const filteredBills = expanded
     ? selectedYear
       ? billsByYear[selectedYear] || []
       : bills
+    : recentBills;
+  const totalPages = Math.max(1, Math.ceil(filteredBills.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const displayBills = expanded
+    ? filteredBills.slice(safePage * pageSize, (safePage + 1) * pageSize)
     : recentBills;
 
   return (
@@ -914,6 +939,7 @@ function BillForm({
               className="toggle-button"
               onClick={() => {
                 setExpanded(!expanded);
+                setCurrentPage(0);
                 if (expanded) setSelectedYear("");
               }}
             >
@@ -924,7 +950,10 @@ function BillForm({
             <div className="year-filter">
               <select
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                  setCurrentPage(0);
+                }}
               >
                 <option value="">Tất cả các năm</option>
                 {years.map((y) => (
@@ -936,9 +965,50 @@ function BillForm({
           {displayBills.map((bill) => (
             <BillCard key={bill.id} bill={bill} />
           ))}
+          {expanded && totalPages > 1 && (
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       )}
     </section>
+  );
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <nav className="pagination" aria-label="Phân trang">
+      <button
+        type="button"
+        className="pagination-button"
+        disabled={currentPage === 0}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        ← Trước
+      </button>
+      <span aria-live="polite">
+        Trang {currentPage + 1} / {totalPages}
+      </span>
+      <button
+        type="button"
+        className="pagination-button"
+        disabled={currentPage >= totalPages - 1}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        Sau →
+      </button>
+    </nav>
   );
 }
 
