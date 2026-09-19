@@ -393,21 +393,37 @@ function MonthSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const { year, month } = parsePeriod(value);
+  const parsed = parsePeriod(value);
+  const [selectedYear, setSelectedYear] = useState(parsed.year);
+  const [selectedMonth, setSelectedMonth] = useState(parsed.month);
   const years = getYears();
 
+  useEffect(() => {
+    const next = parsePeriod(value);
+    setSelectedYear(next.year);
+    setSelectedMonth(next.month);
+  }, [value]);
+
   function handleYearChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(makePeriod(e.target.value, month));
+    const nextYear = e.target.value;
+    setSelectedYear(nextYear);
+    if (nextYear && selectedMonth) {
+      onChange(makePeriod(nextYear, selectedMonth));
+    }
   }
 
   function handleMonthChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(makePeriod(year, e.target.value));
+    const nextMonth = e.target.value;
+    setSelectedMonth(nextMonth);
+    if (selectedYear && nextMonth) {
+      onChange(makePeriod(selectedYear, nextMonth));
+    }
   }
 
   return (
     <div className="period-select">
       <select
-        value={year}
+        value={selectedYear}
         onChange={handleYearChange}
         aria-label="Năm"
       >
@@ -417,13 +433,13 @@ function MonthSelect({
         ))}
       </select>
       <select
-        value={month}
+        value={selectedMonth}
         onChange={handleMonthChange}
         aria-label="Tháng"
       >
         <option value="">Tháng</option>
         {VIETNAMESE_MONTHS.map((name, i) => (
-          <option key={i + 1} value={String(i + 1)}>{name}</option>
+          <option key={i + 1} value={String(i + 1).padStart(2, "0")}>{name}</option>
         ))}
       </select>
     </div>
@@ -437,46 +453,68 @@ function DateSelect({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const { year, month, day } = parseDate(value);
+  const parsed = parseDate(value);
+  const [selectedYear, setSelectedYear] = useState(parsed.year);
+  const [selectedMonth, setSelectedMonth] = useState(parsed.month);
+  const [selectedDay, setSelectedDay] = useState(parsed.day);
   const years = getYears();
   const days = getDays();
 
+  useEffect(() => {
+    const next = parseDate(value);
+    setSelectedYear(next.year);
+    setSelectedMonth(next.month);
+    setSelectedDay(next.day);
+  }, [value]);
+
   function handleYearChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(makeDate(e.target.value, month, day));
+    const nextYear = e.target.value;
+    setSelectedYear(nextYear);
+    if (nextYear && selectedMonth && selectedDay) {
+      onChange(makeDate(nextYear, selectedMonth, selectedDay));
+    }
   }
 
   function handleMonthChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(makeDate(year, e.target.value, day));
+    const nextMonth = e.target.value;
+    setSelectedMonth(nextMonth);
+    if (selectedYear && nextMonth && selectedDay) {
+      onChange(makeDate(selectedYear, nextMonth, selectedDay));
+    }
   }
 
   function handleDayChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange(makeDate(year, month, e.target.value));
+    const nextDay = e.target.value;
+    setSelectedDay(nextDay);
+    if (selectedYear && selectedMonth && nextDay) {
+      onChange(makeDate(selectedYear, selectedMonth, nextDay));
+    }
   }
 
   return (
     <div className="date-select">
       <select
-        value={day}
+        value={selectedDay}
         onChange={handleDayChange}
         aria-label="Ngày"
       >
         <option value="">Ngày</option>
         {days.map((d) => (
-          <option key={d} value={d}>{d}</option>
+          <option key={d} value={d.padStart(2, "0")}>{d}</option>
         ))}
       </select>
       <select
-        value={month}
+        value={selectedMonth}
         onChange={handleMonthChange}
         aria-label="Tháng"
       >
         <option value="">Tháng</option>
         {VIETNAMESE_MONTHS.map((name, i) => (
-          <option key={i + 1} value={String(i + 1)}>{name}</option>
+          <option key={i + 1} value={String(i + 1).padStart(2, "0")}>{name}</option>
         ))}
       </select>
       <select
-        value={year}
+        value={selectedYear}
         onChange={handleYearChange}
         aria-label="Năm"
       >
