@@ -59,5 +59,6 @@ phạm vi refactor.
   thêm selector tùy ý.
 - Pagination lịch sử và receipt state vẫn giữ behavior cục bộ hiện tại; server
   pagination hoặc API lấy receipt sau refresh là các công việc riêng.
-- Docker/browser smoke test vẫn cần được chạy ở môi trường có Docker/backend để
-  xác nhận toàn luồng ngoài unit/component test.
+- Docker/browser smoke test đã được chạy ở môi trường local cho layout, dashboard,
+  bộ chọn kỳ, lọc lịch sử và pagination; manual upload chứng từ hợp lệ sau refresh
+  vẫn là kiểm chứng riêng chưa đánh dấu của Task 5.
