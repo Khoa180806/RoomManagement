@@ -718,6 +718,32 @@ legend {
   font-size: 0.8rem;
 }
 
+.receipt-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.receipt-upload-button,
+.receipt-link {
+  color: var(--clay);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.receipt-upload-button:hover,
+.receipt-link:hover {
+  text-decoration: underline;
+}
+
+.receipt-file-input {
+  display: none;
+}
+
 .payment-amount {
   display: grid;
   gap: 0.5rem;

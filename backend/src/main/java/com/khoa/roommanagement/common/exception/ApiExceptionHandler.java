@@ -14,7 +14,9 @@ import com.khoa.roommanagement.billing.electricity.exception.NonConsecutivePerio
 import com.khoa.roommanagement.billing.payments.exception.BillAlreadyPaidException;
 import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictException;
 import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
+import com.khoa.roommanagement.billing.payments.exception.InvalidReceiptFileException;
 import com.khoa.roommanagement.billing.payments.exception.PaymentNotFoundException;
+import com.khoa.roommanagement.billing.payments.exception.ReceiptNotFoundException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +150,18 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handlePaymentNotFound(PaymentNotFoundException exception) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(ApiErrorResponse.of("PAYMENT_NOT_FOUND", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(InvalidReceiptFileException.class)
+	ResponseEntity<ApiErrorResponse> handleInvalidReceiptFile(InvalidReceiptFileException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("INVALID_RECEIPT_FILE", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(ReceiptNotFoundException.class)
+	ResponseEntity<ApiErrorResponse> handleReceiptNotFound(ReceiptNotFoundException exception) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(ApiErrorResponse.of("RECEIPT_NOT_FOUND", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(Exception.class)

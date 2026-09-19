@@ -19,6 +19,11 @@ import {
   getPayments,
   type Payment,
 } from "./features/payments/api";
+import {
+  uploadReceipt,
+  getReceiptUrl,
+  type Receipt,
+} from "./features/receipts/api";
 import "./App.css";
 
 const VIETNAMESE_MONTHS = [
@@ -1000,8 +1005,37 @@ function PaymentForm({
 
 function PaymentHistory({ payments }: { payments: Payment[] }) {
   const [expanded, setExpanded] = useState(false);
+  const [receipts, setReceipts] = useState<Record<string, Receipt>>({});
+  const [uploadingPaymentId, setUploadingPaymentId] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const recentPayments = payments.slice(0, 3);
   const displayPayments = expanded ? payments : recentPayments;
+
+  async function handleReceiptUpload(paymentId: string, file: File) {
+    setReceiptError(null);
+    if (file.size > 5 * 1024 * 1024) {
+      setReceiptError("Ảnh chứng từ không được vượt quá 5 MB.");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setReceiptError("Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.");
+      return;
+    }
+
+    setUploadingPaymentId(paymentId);
+    try {
+      const receipt = await uploadReceipt(paymentId, file);
+      setReceipts((current) => ({ ...current, [paymentId]: receipt }));
+    } catch (requestError: unknown) {
+      setReceiptError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Không thể tải chứng từ lên.",
+      );
+    } finally {
+      setUploadingPaymentId(null);
+    }
+  }
 
   return (
     <div className="payments-list">
@@ -1017,23 +1051,58 @@ function PaymentHistory({ payments }: { payments: Payment[] }) {
           </button>
         )}
       </div>
+      {receiptError && (
+        <p className="form-error" role="alert">
+          {receiptError}
+        </p>
+      )}
       <ul>
-        {displayPayments.map((p) => (
-          <li key={p.id} className="payment-item">
-            <div className="payment-info">
-              <span className="payment-period">Kỳ {p.bill.period}</span>
-              <span className="payment-date">
-                {new Date(p.paidAt).toLocaleDateString("vi-VN")}
-              </span>
-            </div>
-            <div className="payment-amount">
-              <strong>{money.format(p.bill.totalAmount)}</strong>
-              <span className={`status-pill ${p.onTime ? "status-paid" : "status-overdue"}`}>
-                {p.onTime ? "Đúng hạn" : "Trễ hạn"}
-              </span>
-            </div>
-          </li>
-        ))}
+        {displayPayments.map((p) => {
+          const receipt = receipts[p.id];
+          return (
+            <li key={p.id} className="payment-item">
+              <div className="payment-info">
+                <span className="payment-period">Kỳ {p.bill.period}</span>
+                <span className="payment-date">
+                  {new Date(p.paidAt).toLocaleDateString("vi-VN")}
+                </span>
+                <div className="receipt-actions">
+                  <label className="receipt-upload-button" htmlFor={`receipt-${p.id}`}>
+                    {uploadingPaymentId === p.id ? "Đang tải..." : receipt ? "Đổi chứng từ" : "Thêm chứng từ"}
+                  </label>
+                  <input
+                    id={`receipt-${p.id}`}
+                    className="receipt-file-input"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={uploadingPaymentId !== null}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      event.currentTarget.value = "";
+                      if (file) void handleReceiptUpload(p.id, file);
+                    }}
+                  />
+                  {receipt && (
+                    <a
+                      className="receipt-link"
+                      href={getReceiptUrl(receipt.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Mở ảnh
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="payment-amount">
+                <strong>{money.format(p.bill.totalAmount)}</strong>
+                <span className={`status-pill ${p.onTime ? "status-paid" : "status-overdue"}`}>
+                  {p.onTime ? "Đúng hạn" : "Trễ hạn"}
+                </span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
