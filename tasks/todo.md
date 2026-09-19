@@ -94,13 +94,13 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Chỉ nhận JPEG, PNG, WebP không quá 5 MB và đã kiểm tra chữ ký tệp.
-- [ ] Metadata không lộ đường dẫn local; tệp lỗi không còn trên ổ đĩa.
-- [ ] Người dùng mở lại ảnh từ lịch sử thanh toán.
+- [x] Chỉ nhận JPEG, PNG, WebP không quá 5 MB và đã kiểm tra chữ ký tệp.
+- [x] Metadata không lộ đường dẫn local; tệp lỗi không còn trên ổ đĩa.
+- [x] Người dùng mở lại ảnh từ lịch sử thanh toán.
 
 **Kiểm chứng:**
 
-- [ ] Integration test loại tệp, kích thước và path traversal.
+- [x] Integration test loại tệp, kích thước và path traversal.
 - [ ] Manual: upload ảnh hợp lệ từ điện thoại và mở lại sau refresh.
 
 **Phụ thuộc:** Task 4.  
@@ -110,7 +110,7 @@
 ## Checkpoint: Sau Tuần 2
 
 - [ ] Luồng hóa đơn → thanh toán → chứng từ chạy end-to-end.
-- [ ] Không có token/đường dẫn local trong API response hay log kiểm thử.
+- [x] Không có token/đường dẫn local trong API response hay log kiểm thử.
 - [ ] Dữ liệu thanh toán của một kỳ thực tế được đối chiếu thủ công.
 
 ## Tuần 3 — Nhắc Telegram
@@ -192,7 +192,7 @@
 
 **Kiểm chứng:**
 
-- [ ] Backend/frontend test, lint, build chạy thành công.
+- [x] Backend/frontend test, lint, build chạy thành công ở mức hiện có.
 - [ ] Rà soát thủ công checklist bảo mật và accessibility.
 
 **Phụ thuộc:** Task 8.  

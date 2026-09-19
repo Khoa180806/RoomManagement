@@ -76,8 +76,16 @@ Kiểm tra chất lượng frontend:
 
 ```powershell
 npm run lint
+npm run test
 npm run build
 ```
+
+Frontend được tổ chức theo `app`, `components`, `features` và `shared`. State/API
+cấp workspace nằm ở `frontend/src/app/useRentalWorkspace.ts`; API feature dùng
+request wrapper chung tại `frontend/src/shared/api/client.ts`. Tailwind CSS v4
+được cấu hình theo CSS-first, token nằm ở `frontend/src/shared/styles/` và
+stylesheet `App.css` cũ đã được loại bỏ. Xem [frontend/README.md](frontend/README.md)
+để biết quy ước thư mục và test component.
 
 ## Lưu ý an toàn
 
