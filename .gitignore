@@ -16,7 +16,8 @@ target/
 # Tệp người dùng và dữ liệu chạy local
 storage/
 uploads/
-receipts/
+/receipts/
+backend/receipts/
 postgres-data/
 
 # IDE và hệ điều hành
