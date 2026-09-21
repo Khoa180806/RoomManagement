@@ -1,5 +1,11 @@
 import { request } from "../../shared/api/client";
 
+export type PaymentReceiptSummary = {
+  id: string;
+  contentType: string;
+  fileSize: number;
+};
+
 export type Payment = {
   id: string;
   bill: {
@@ -13,12 +19,12 @@ export type Payment = {
   note: string | null;
   onTime: boolean;
   createdAt: string;
+  receipt: PaymentReceiptSummary | null;
 };
 
 export type PaymentInput = {
   paidAt: string;
   note?: string;
-  idempotencyKey?: string;
 };
 
 export type PaymentPage = {
@@ -32,10 +38,14 @@ export type PaymentPage = {
 export async function confirmPayment(
   billId: string,
   input: PaymentInput,
+  idempotencyKey: string,
 ): Promise<Payment> {
   return request<Payment>(`/api/bills/${billId}/payments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
     body: JSON.stringify(input),
   });
 }

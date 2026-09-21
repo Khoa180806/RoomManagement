@@ -4,6 +4,7 @@ import { StatusPill } from "../../../components/data-display/StatusPill";
 import { Cost } from "../../../components/data-display/Cost";
 import { parsePeriod } from "../../../shared/lib/date";
 import { formatMoney } from "../../../shared/lib/format";
+import { useYearHistory } from "../../../shared/lib/useYearHistory";
 import type { Bill } from "../api";
 
 export function BillCard({ bill }: { bill: Bill }) {
@@ -66,28 +67,13 @@ export function BillCard({ bill }: { bill: Bill }) {
 }
 
 export function BillList({ bills }: { bills: Bill[] }) {
-  const [expanded, setExpanded] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedYear, setSelectedYear] = useState("");
-  const recentBills = bills.slice(0, 3);
-  const billsByYear = bills.reduce<Record<string, Bill[]>>((groups, bill) => {
-    const { year } = parsePeriod(bill.period);
-    if (!groups[year]) groups[year] = [];
-    groups[year].push(bill);
-    return groups;
-  }, {});
-  const years = Object.keys(billsByYear).sort((a, b) => b.localeCompare(a));
-  const filteredBills = expanded && selectedYear ? billsByYear[selectedYear] ?? [] : bills;
-  const pageSize = 6;
-  const totalPages = Math.max(1, Math.ceil(filteredBills.length / pageSize));
-  const safePage = Math.min(currentPage, totalPages - 1);
-  const displayBills = expanded ? filteredBills.slice(safePage * pageSize, (safePage + 1) * pageSize) : recentBills;
+  const history = useYearHistory(bills, (bill) => parsePeriod(bill.period).year);
 
   if (bills.length === 0) return null;
   return <div className="mt-6 border-t border-line pt-4">
-    <div className="mb-3 flex items-center justify-between gap-3"><h3 className="m-0 text-[0.95rem] font-bold text-ink">Danh sách hóa đơn</h3><button type="button" className="rounded-[0.35rem] border border-clay bg-transparent px-3 py-2 text-xs font-semibold text-clay transition hover:bg-clay hover:text-white focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-2" onClick={() => { setExpanded((value) => !value); setCurrentPage(0); if (expanded) setSelectedYear(""); }}>{expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}</button></div>
-    {expanded && years.length > 1 && <label className="mb-4 block"><span className="sr-only">Lọc hóa đơn theo năm</span><select className="min-h-10 w-full rounded-[0.35rem] border border-line-strong bg-white px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none focus:ring-4 focus:ring-focus" value={selectedYear} onChange={(event) => { setSelectedYear(event.target.value); setCurrentPage(0); }}><option value="">Tất cả các năm</option>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>}
-    {displayBills.map((bill) => <BillCard key={bill.id} bill={bill} />)}
-    {expanded && totalPages > 1 && <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setCurrentPage} />}
+    <div className="mb-3 flex items-center justify-between gap-3"><h3 className="m-0 text-[0.95rem] font-bold text-ink">Danh sách hóa đơn</h3><button type="button" className="rounded-[0.35rem] border border-clay bg-transparent px-3 py-2 text-xs font-semibold text-clay transition hover:bg-clay hover:text-white focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-2" onClick={history.toggleExpanded}>{history.expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}</button></div>
+    {history.expanded && history.years.length > 1 && <label className="mb-4 block"><span className="sr-only">Lọc hóa đơn theo năm</span><select className="min-h-10 w-full rounded-[0.35rem] border border-line-strong bg-white px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none focus:ring-4 focus:ring-focus" value={history.selectedYear} onChange={(event) => history.setSelectedYear(event.target.value)}><option value="">Tất cả các năm</option>{history.years.map((year) => <option key={year} value={year}>{year}</option>)}</select></label>}
+    {history.pageItems.map((bill) => <BillCard key={bill.id} bill={bill} />)}
+    {history.expanded && history.totalPages > 1 && <Pagination currentPage={history.safePage} totalPages={history.totalPages} onPageChange={history.setCurrentPage} />}
   </div>;
 }

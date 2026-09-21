@@ -1,9 +1,9 @@
-import { useState } from "react";
 import type { FormEvent } from "react";
 import { MonthSelect } from "../../../components/forms/MonthSelect";
 import { Pagination } from "../../../components/data-display/Pagination";
 import { ErrorMessage } from "../../../components/feedback/Feedback";
 import { parsePeriod } from "../../../shared/lib/date";
+import { useYearHistory } from "../../../shared/lib/useYearHistory";
 import type { ElectricityReading } from "../api";
 
 type MeterReadingFormProps = {
@@ -18,51 +18,34 @@ type MeterReadingFormProps = {
 };
 
 function ReadingHistory({ readings }: { readings: ElectricityReading[] }) {
-  const [expanded, setExpanded] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedYear, setSelectedYear] = useState("");
-  const recentReadings = readings.slice(0, 3);
-  const readingsByYear = readings.reduce<Record<string, ElectricityReading[]>>((groups, reading) => {
-    const { year } = parsePeriod(reading.period);
-    if (!groups[year]) groups[year] = [];
-    groups[year].push(reading);
-    return groups;
-  }, {});
-  const years = Object.keys(readingsByYear).sort((a, b) => b.localeCompare(a));
-  const filteredReadings = expanded && selectedYear ? readingsByYear[selectedYear] ?? [] : readings;
-  const pageSize = 6;
-  const totalPages = Math.max(1, Math.ceil(filteredReadings.length / pageSize));
-  const safePage = Math.min(currentPage, totalPages - 1);
-  const displayReadings = expanded
-    ? filteredReadings.slice(safePage * pageSize, (safePage + 1) * pageSize)
-    : recentReadings;
+  const history = useYearHistory(readings, (reading) => parsePeriod(reading.period).year);
 
   return (
     <div className="mt-6 border-t border-line pt-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="m-0 text-[0.95rem] font-bold text-ink">Lịch sử chỉ số</h3>
-        <button type="button" className="rounded-[0.35rem] border border-clay bg-transparent px-3 py-2 text-xs font-semibold text-clay transition hover:bg-clay hover:text-white focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-2" onClick={() => { setExpanded((value) => !value); setCurrentPage(0); if (expanded) setSelectedYear(""); }}>
-          {expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}
-        </button>
+        {readings.length > 3 && <button type="button" className="rounded-[0.35rem] border border-clay bg-transparent px-3 py-2 text-xs font-semibold text-clay transition hover:bg-clay hover:text-white focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-2" onClick={history.toggleExpanded}>
+          {history.expanded ? "▲ Thu gọn" : "▼ Xem tất cả"}
+        </button>}
       </div>
-      {expanded && years.length > 1 && (
+      {history.expanded && history.years.length > 1 && (
         <label className="mb-4 block">
           <span className="sr-only">Lọc chỉ số theo năm</span>
-          <select className="min-h-10 w-full rounded-[0.35rem] border border-line-strong bg-white px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none focus:ring-4 focus:ring-focus" value={selectedYear} onChange={(event) => { setSelectedYear(event.target.value); setCurrentPage(0); }}>
+          <select className="min-h-10 w-full rounded-[0.35rem] border border-line-strong bg-white px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none focus:ring-4 focus:ring-focus" value={history.selectedYear} onChange={(event) => history.setSelectedYear(event.target.value)}>
             <option value="">Tất cả các năm</option>
-            {years.map((year) => <option key={year} value={year}>{year}</option>)}
+            {history.years.map((year) => <option key={year} value={year}>{year}</option>)}
           </select>
         </label>
       )}
       <ul className="m-0 list-none p-0">
-        {displayReadings.map((reading) => (
+        {history.pageItems.map((reading) => (
           <li key={reading.id} className="flex items-center justify-between border-b border-line py-3">
             <span className="text-sm text-muted">{reading.period}</span>
             <strong className="text-sm tabular-nums text-ink">{reading.meterValue.toLocaleString("vi-VN")} kWh</strong>
           </li>
         ))}
       </ul>
-      {expanded && totalPages > 1 && <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setCurrentPage} />}
+      {history.expanded && history.totalPages > 1 && <Pagination currentPage={history.safePage} totalPages={history.totalPages} onPageChange={history.setCurrentPage} />}
     </div>
   );
 }

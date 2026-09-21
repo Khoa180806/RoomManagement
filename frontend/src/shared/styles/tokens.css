@@ -18,6 +18,9 @@
   --warning-ink: #8b6d12;
   --font-body: Manrope, sans-serif;
   --font-display: Fraunces, serif;
+  --gradient-start: #f8f5ee;
+  --gradient-mid: #fffdfa;
+  --gradient-end: #f5eee5;
 }
 
 @theme inline {

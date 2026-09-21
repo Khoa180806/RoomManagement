@@ -10,7 +10,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #f8f5ee 0%, #fffdfa 42%, #f5eee5 100%);
+  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 42%, var(--gradient-end) 100%);
   margin: 0;
   min-width: 320px;
 }

@@ -19,6 +19,8 @@ import { confirmPayment, getPayments, type Payment } from "../features/payments/
 import { ApiRequestError } from "../shared/api/errors";
 import { getCurrentPeriod } from "../shared/lib/date";
 
+const PAYMENT_PAGE_SIZE = 6;
+
 const initialForm: RentalContractInput = {
   startDate: "",
   endDate: "",
@@ -31,6 +33,13 @@ const initialForm: RentalContractInput = {
 
 function getErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
+}
+
+function createIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `payment-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 export function useRentalWorkspace() {
@@ -49,12 +58,31 @@ export function useRentalWorkspace() {
   const [billError, setBillError] = useState<string | null>(null);
   const [isCreatingBill, setIsCreatingBill] = useState(false);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
-  const [paidAt, setPaidAt] = useState("");
-  const [paymentNote, setPaymentNote] = useState("");
+  const [paymentPage, setPaymentPage] = useState(0);
+  const [paymentTotalPages, setPaymentTotalPages] = useState(1);
+  const [paymentOnTime, setPaymentOnTime] = useState<boolean | undefined>(undefined);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [selectedBillId, setSelectedBillIdState] = useState<string | null>(null);
+  const [paidAt, setPaidAtState] = useState("");
+  const [paymentNote, setPaymentNoteState] = useState("");
+  const [paymentIdempotencyKey, setPaymentIdempotencyKey] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const hasLoadedRef = useRef(false);
+
+  async function loadPayments(page: number, onTime: boolean | undefined = paymentOnTime) {
+    setIsLoadingPayments(true);
+    try {
+      const data = await getPayments(page, PAYMENT_PAGE_SIZE, onTime);
+      setPayments(data.content);
+      setPaymentPage(data.number);
+      setPaymentTotalPages(Math.max(1, data.totalPages));
+    } catch (requestError: unknown) {
+      setPaymentError(getErrorMessage(requestError, "Không thể tải lịch sử thanh toán."));
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  }
 
   useEffect(() => {
     if (hasLoadedRef.current) return;
@@ -66,13 +94,15 @@ export function useRentalWorkspace() {
         return Promise.all([
           getElectricityReadings(),
           getBills(0, 100),
-          getPayments(),
+          getPayments(0, PAYMENT_PAGE_SIZE),
         ]);
       })
       .then(([readingsData, billsData, paymentsData]) => {
         setReadings(readingsData);
         setBills(billsData.content);
         setPayments(paymentsData.content);
+        setPaymentPage(paymentsData.number);
+        setPaymentTotalPages(Math.max(1, paymentsData.totalPages));
       })
       .catch((requestError: unknown) => {
         if (!(requestError instanceof ApiRequestError && requestError.code === "NOT_FOUND")) {
@@ -159,22 +189,52 @@ export function useRentalWorkspace() {
     }
 
     setIsConfirmingPayment(true);
+    const idempotencyKey = paymentIdempotencyKey ?? createIdempotencyKey();
+    setPaymentIdempotencyKey(idempotencyKey);
     try {
-      const payment = await confirmPayment(selectedBillId, {
-        paidAt: new Date(paidAt).toISOString(),
-        note: paymentNote || undefined,
-        idempotencyKey: `payment-${selectedBillId}-${Date.now()}`,
-      });
-      setPayments((current) => [payment, ...current]);
+      const payment = await confirmPayment(
+        selectedBillId,
+        {
+          paidAt: new Date(paidAt).toISOString(),
+          note: paymentNote || undefined,
+        },
+        idempotencyKey,
+      );
       setBills((current) => current.map((bill) => bill.id === selectedBillId ? { ...bill, status: "PAID" } : bill));
-      setSelectedBillId(null);
-      setPaidAt("");
-      setPaymentNote("");
+      setSelectedBillIdState(null);
+      setPaidAtState("");
+      setPaymentNoteState("");
+      setPaymentIdempotencyKey(null);
+      void loadPayments(paymentPage, paymentOnTime);
+      // Giữ biến để thể hiện response đã được nhận và tránh thay đổi luồng retry.
+      void payment;
     } catch (requestError: unknown) {
+      // Giữ idempotency key và form values để retry cùng intent an toàn.
       setPaymentError(getErrorMessage(requestError, "Không thể xác nhận thanh toán."));
     } finally {
       setIsConfirmingPayment(false);
     }
+  }
+
+  function setSelectedBillId(value: string | null) {
+    setSelectedBillIdState(value);
+    setPaymentIdempotencyKey(null);
+  }
+
+  function setPaidAt(value: string) {
+    setPaidAtState(value);
+    setPaymentIdempotencyKey(null);
+  }
+
+  function setPaymentNote(value: string) {
+    setPaymentNoteState(value);
+    setPaymentIdempotencyKey(null);
+  }
+
+  function setPaymentFilter(value: string) {
+    const next = value === "true" ? true : value === "false" ? false : undefined;
+    setPaymentOnTime(next);
+    void loadPayments(0, next);
   }
 
   return {
@@ -193,6 +253,10 @@ export function useRentalWorkspace() {
     billError,
     isCreatingBill,
     payments,
+    paymentPage,
+    paymentTotalPages,
+    paymentOnTime,
+    isLoadingPayments,
     selectedBillId,
     paidAt,
     paymentNote,
@@ -209,5 +273,7 @@ export function useRentalWorkspace() {
     setSelectedBillId,
     setPaidAt,
     setPaymentNote,
+    setPaymentPage: (page: number) => void loadPayments(page, paymentOnTime),
+    setPaymentFilter,
   };
 }

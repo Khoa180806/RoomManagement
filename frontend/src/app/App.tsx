@@ -67,6 +67,12 @@ function App() {
             <PaymentForm
               bills={workspace.bills}
               payments={workspace.payments}
+              paymentPage={workspace.paymentPage}
+              paymentTotalPages={workspace.paymentTotalPages}
+              paymentOnTime={workspace.paymentOnTime}
+              onPaymentPageChange={workspace.setPaymentPage}
+              onPaymentFilterChange={workspace.setPaymentFilter}
+              isLoadingPayments={workspace.isLoadingPayments}
               selectedBillId={workspace.selectedBillId}
               paidAt={workspace.paidAt}
               note={workspace.paymentNote}
