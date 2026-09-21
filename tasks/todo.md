@@ -101,7 +101,7 @@
 **Kiểm chứng:**
 
 - [x] Integration test loại tệp, kích thước và path traversal.
-- [ ] Manual: upload ảnh hợp lệ từ điện thoại và mở lại sau refresh.
+- [x] Manual: upload ảnh hợp lệ từ điện thoại và mở lại sau refresh.
 
 **Phụ thuộc:** Task 4.  
 **Tệp dự kiến:** module `payments`, cấu hình storage, `frontend/src/features/receipts/`.  
@@ -109,9 +109,9 @@
 
 ## Checkpoint: Sau Tuần 2
 
-- [ ] Luồng hóa đơn → thanh toán → chứng từ chạy end-to-end.
+- [x] Luồng hóa đơn → thanh toán → chứng từ chạy end-to-end.
 - [x] Không có token/đường dẫn local trong API response hay log kiểm thử.
-- [ ] Dữ liệu thanh toán của một kỳ thực tế được đối chiếu thủ công.
+- [x] Dữ liệu thanh toán của một kỳ thực tế được đối chiếu thủ công.
 
 ## Tuần 3 — Nhắc Telegram
 
