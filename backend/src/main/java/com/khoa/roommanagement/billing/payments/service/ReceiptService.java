@@ -53,18 +53,11 @@ public class ReceiptService {
 			throw new InvalidReceiptFileException("Hóa đơn này đã có chứng từ.");
 		}
 
-		try {
-			fileValidator.validate(file);
-		} catch (IOException e) {
-			log.warn("Failed to read uploaded file");
-			throw new InvalidReceiptFileException("Không thể đọc tệp chứng từ.");
-		}
-
 		String contentType;
 		try {
-			contentType = fileValidator.detectContentType(file);
+			contentType = fileValidator.validate(file);
 		} catch (IOException e) {
-			log.warn("Failed to detect file type");
+			log.warn("Failed to read uploaded file");
 			throw new InvalidReceiptFileException("Không thể đọc tệp chứng từ.");
 		}
 

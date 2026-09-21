@@ -10,15 +10,18 @@ import com.khoa.roommanagement.billing.contracts.exception.RentalContractNotFoun
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.payments.entity.Payment;
 import com.khoa.roommanagement.billing.payments.exception.BillAlreadyPaidException;
-import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyInProgressException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyPayloadMismatchException;
 import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
 import com.khoa.roommanagement.billing.payments.repository.PaymentRepository;
+import com.khoa.roommanagement.common.time.BusinessZone;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BillRepository billRepository;
     private final RentalContractRepository contractRepository;
+    private final ConcurrentHashMap<String, ReentrantLock> idempotencyLocks = new ConcurrentHashMap<>();
 
     public PaymentService(
         PaymentRepository paymentRepository,
@@ -43,28 +47,47 @@ public class PaymentService {
 
     @Transactional
     public Payment confirmPayment(UUID billId, Instant paidAt, String note, String idempotencyKey) {
-        // Check idempotency key
-        if (idempotencyKey != null && !idempotencyKey.isEmpty()) {
+        String normalizedKey = normalizeKey(idempotencyKey);
+        if (normalizedKey == null) {
+            return confirmPaymentInternal(billId, paidAt, note, null);
+        }
+
+        ReentrantLock lock = idempotencyLocks.computeIfAbsent(normalizedKey, ignored -> new ReentrantLock());
+        if (!lock.tryLock()) {
+            throw new IdempotencyInProgressException("Yêu cầu thanh toán với key này đang được xử lý.");
+        }
+        try {
+            return confirmPaymentInternal(billId, paidAt, note, normalizedKey);
+        } finally {
+            lock.unlock();
+            idempotencyLocks.remove(normalizedKey, lock);
+        }
+    }
+
+    private Payment confirmPaymentInternal(UUID billId, Instant paidAt, String note, String idempotencyKey) {
+        if (idempotencyKey != null) {
             Optional<Payment> existingPayment = paymentRepository.findByIdempotencyKey(idempotencyKey);
             if (existingPayment.isPresent()) {
                 Payment existing = existingPayment.get();
-                if (existing.getBill().getId().equals(billId)) {
-                    return existing; // Idempotent return
-                } else {
-                    throw new IdempotencyConflictException("Idempotency key đã được sử dụng cho hóa đơn khác.");
+                String requestHash = Payment.hashPayload(billId, paidAt, note);
+                String existingHash = existing.getPayloadHash() == null
+                    ? Payment.hashPayload(existing.getBill().getId(), existing.getPaidAt(), existing.getNote())
+                    : existing.getPayloadHash();
+                if (existing.getBill().getId().equals(billId) && requestHash.equals(existingHash)) {
+                    return existing;
                 }
+                throw new IdempotencyPayloadMismatchException(
+                    "Idempotency key đã được sử dụng cho nội dung thanh toán khác.");
             }
         }
 
-        // Validate bill
         Bill bill = billRepository.findById(billId)
             .orElseThrow(() -> new com.khoa.roommanagement.billing.bills.exception.BillNotFoundException(billId));
 
-        if (bill.getStatus() != BillStatus.PENDING) {
+        if (bill.getStatus() == BillStatus.PAID) {
             throw new BillAlreadyPaidException();
         }
 
-        // Validate contract not terminated
         RentalContract contract = contractRepository.findById(bill.getContractId())
             .orElseThrow(RentalContractNotFoundException::new);
 
@@ -72,28 +95,31 @@ public class PaymentService {
             throw new ContractTerminatedException();
         }
 
-        // Validate paidAt not in future
         if (paidAt.isAfter(Instant.now())) {
             throw new InvalidPaidAtException();
         }
 
-        // Validate paidAt >= period start date
         YearMonth billPeriod = YearMonth.parse(bill.getPeriod());
         LocalDate periodStart = billPeriod.atDay(1);
-        Instant periodStartInstant = periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant periodStartInstant = periodStart.atStartOfDay(BusinessZone.VIETNAM).toInstant();
         if (paidAt.isBefore(periodStartInstant)) {
             throw new InvalidPaidAtException();
         }
 
-        // Create payment
         Payment payment = Payment.confirm(bill, paidAt, note, idempotencyKey);
         payment = paymentRepository.save(payment);
 
-        // Update bill status
         bill.setStatus(BillStatus.PAID);
         billRepository.save(bill);
 
         return payment;
+    }
+
+    private String normalizeKey(String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return null;
+        }
+        return idempotencyKey.trim();
     }
 
     @Transactional(readOnly = true)

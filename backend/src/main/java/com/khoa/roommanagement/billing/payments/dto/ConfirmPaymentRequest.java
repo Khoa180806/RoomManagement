@@ -9,8 +9,6 @@ public record ConfirmPaymentRequest(
     @PastOrPresent(message = "Ngày thanh toán không được ở tương lai")
     Instant paidAt,
 
-    String note,
-
-    String idempotencyKey
+    String note
 ) {
 }

@@ -3,7 +3,7 @@ package com.khoa.roommanagement.billing.payments.service;
 import com.khoa.roommanagement.billing.payments.exception.InvalidReceiptFileException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,16 +16,9 @@ public class ReceiptFileValidator {
 
 	public static final long MAX_FILE_SIZE = 5L * 1024 * 1024; // 5 MB
 
-	private static final Map<String, String> SUPPORTED_TYPES = Map.of(
-			"image/jpeg", "JPEG",
-			"image/png", "PNG",
-			"image/webp", "WEBP"
-	);
+	private static final Set<String> SUPPORTED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
-	public record ValidationResult(String contentType, String formatName) {
-	}
-
-	public void validate(MultipartFile file) throws IOException {
+	public String validate(MultipartFile file) throws IOException {
 		if (file == null || file.isEmpty()) {
 			throw new InvalidReceiptFileException("Tệp chứng từ là bắt buộc.");
 		}
@@ -35,9 +28,10 @@ public class ReceiptFileValidator {
 		}
 
 		String detectedType = detectContentType(file);
-		if (detectedType == null || !SUPPORTED_TYPES.containsKey(detectedType)) {
+		if (detectedType == null || !SUPPORTED_TYPES.contains(detectedType)) {
 			throw new InvalidReceiptFileException("Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.");
 		}
+		return detectedType;
 	}
 
 	public String detectContentType(MultipartFile file) throws IOException {
@@ -53,13 +47,15 @@ public class ReceiptFileValidator {
 			return null;
 		}
 
-		// JPEG: FF D8 FF
+		// JPEG: FF D8 FF (SOI + marker đầu tiên)
 		if ((header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8 && (header[2] & 0xFF) == 0xFF) {
 			return "image/jpeg";
 		}
 
-		// PNG: 89 50 4E 47 0D 0A 1A 0A
-		if ((header[0] & 0xFF) == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
+		// PNG: 89 50 4E 47 0D 0A 1A 0A (đủ 8 byte chữ ký)
+		if (read >= 8
+				&& (header[0] & 0xFF) == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47
+				&& header[4] == 0x0D && header[5] == 0x0A && header[6] == 0x1A && header[7] == 0x0A) {
 			return "image/png";
 		}
 

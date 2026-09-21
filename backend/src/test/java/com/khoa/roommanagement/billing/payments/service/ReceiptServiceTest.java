@@ -76,7 +76,7 @@ class ReceiptServiceTest {
 		UUID paymentId = payment.getId();
 		when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
 		when(receiptRepository.findByPaymentId(paymentId)).thenReturn(Optional.empty());
-		when(fileValidator.detectContentType(any())).thenReturn("image/jpeg");
+		when(fileValidator.validate(any())).thenReturn("image/jpeg");
 		when(receiptRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
 		byte[] bytes = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0};
@@ -125,8 +125,7 @@ class ReceiptServiceTest {
 		UUID paymentId = payment.getId();
 		when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
 		when(receiptRepository.findByPaymentId(paymentId)).thenReturn(Optional.empty());
-		org.mockito.Mockito.doThrow(new InvalidReceiptFileException("Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP."))
-			.when(fileValidator).validate(any());
+when(fileValidator.validate(any())).thenThrow(new InvalidReceiptFileException("Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP."));
 
 		MockMultipartFile file = new MockMultipartFile("file", "bad.pdf", "application/pdf",
 				new ByteArrayInputStream("pdf".getBytes()));

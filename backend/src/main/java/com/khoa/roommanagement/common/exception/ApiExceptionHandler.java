@@ -12,7 +12,8 @@ import com.khoa.roommanagement.billing.electricity.exception.DuplicateReadingExc
 import com.khoa.roommanagement.billing.electricity.exception.MeterValueDecreasedException;
 import com.khoa.roommanagement.billing.electricity.exception.NonConsecutivePeriodException;
 import com.khoa.roommanagement.billing.payments.exception.BillAlreadyPaidException;
-import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyInProgressException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyPayloadMismatchException;
 import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
 import com.khoa.roommanagement.billing.payments.exception.InvalidReceiptFileException;
 import com.khoa.roommanagement.billing.payments.exception.PaymentNotFoundException;
@@ -25,8 +26,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -40,6 +43,12 @@ public class ApiExceptionHandler {
 				.toList();
 		return ResponseEntity.unprocessableEntity()
 				.body(ApiErrorResponse.of("VALIDATION_ERROR", "Dữ liệu không hợp lệ", details));
+	}
+
+	@ExceptionHandler(MissingRequestHeaderException.class)
+	ResponseEntity<ApiErrorResponse> handleMissingRequestHeader(MissingRequestHeaderException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("MISSING_HEADER", "Thiếu header bắt buộc: " + exception.getHeaderName(), List.of()));
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -60,11 +69,15 @@ public class ApiExceptionHandler {
 			return ResponseEntity.status(HttpStatus.CONFLICT)
 					.body(ApiErrorResponse.of("DUPLICATE_READING", "Đã có chỉ số điện cho kỳ này", List.of()));
 		}
-		if (message != null && message.contains("uq_bills_contract_period")) {
+			if (message != null && message.contains("uq_bills_contract_period")) {
+				return ResponseEntity.status(HttpStatus.CONFLICT)
+						.body(ApiErrorResponse.of("DUPLICATE_BILL", "Đã có hóa đơn cho kỳ này", List.of()));
+			}
+			if (message != null && (message.contains("idempotency_key") || message.contains("uk_payments_idempotency_key"))) {
+				return ResponseEntity.status(HttpStatus.CONFLICT)
+						.body(ApiErrorResponse.of("IDEMPOTENCY_IN_PROGRESS", "Yêu cầu thanh toán trùng đang được xử lý", List.of()));
+			}
 			return ResponseEntity.status(HttpStatus.CONFLICT)
-					.body(ApiErrorResponse.of("DUPLICATE_BILL", "Đã có hóa đơn cho kỳ này", List.of()));
-		}
-		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(ApiErrorResponse.of("DATA_INTEGRITY_VIOLATION", "Dữ liệu bị trùng hoặc vi phạm ràng buộc", List.of()));
 	}
 
@@ -140,10 +153,16 @@ public class ApiExceptionHandler {
 				.body(ApiErrorResponse.of("INVALID_PAID_AT", exception.getMessage(), List.of()));
 	}
 
-	@ExceptionHandler(IdempotencyConflictException.class)
-	ResponseEntity<ApiErrorResponse> handleIdempotencyConflict(IdempotencyConflictException exception) {
+	@ExceptionHandler(IdempotencyPayloadMismatchException.class)
+	ResponseEntity<ApiErrorResponse> handleIdempotencyPayloadMismatch(IdempotencyPayloadMismatchException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("IDEMPOTENCY_PAYLOAD_MISMATCH", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(IdempotencyInProgressException.class)
+	ResponseEntity<ApiErrorResponse> handleIdempotencyInProgress(IdempotencyInProgressException exception) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
-				.body(ApiErrorResponse.of("IDEMPOTENCY_CONFLICT", exception.getMessage(), List.of()));
+				.body(ApiErrorResponse.of("IDEMPOTENCY_IN_PROGRESS", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(PaymentNotFoundException.class)
@@ -162,6 +181,12 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handleReceiptNotFound(ReceiptNotFoundException exception) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 				.body(ApiErrorResponse.of("RECEIPT_NOT_FOUND", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	ResponseEntity<ApiErrorResponse> handleMaxUploadSize() {
+		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+				.body(ApiErrorResponse.of("RECEIPT_TOO_LARGE", "Tệp chứng từ không được vượt quá 5 MB.", List.of()));
 	}
 
 	@ExceptionHandler(Exception.class)

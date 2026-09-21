@@ -18,12 +18,13 @@ import com.khoa.roommanagement.billing.contracts.exception.ContractTerminatedExc
 import com.khoa.roommanagement.billing.contracts.repository.RentalContractRepository;
 import com.khoa.roommanagement.billing.payments.entity.Payment;
 import com.khoa.roommanagement.billing.payments.exception.BillAlreadyPaidException;
-import com.khoa.roommanagement.billing.payments.exception.IdempotencyConflictException;
+import com.khoa.roommanagement.billing.payments.exception.IdempotencyPayloadMismatchException;
 import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException;
 import com.khoa.roommanagement.billing.payments.repository.PaymentRepository;
+import com.khoa.roommanagement.common.time.BusinessZone;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,7 @@ class PaymentServiceTest {
         assertThat(payment.getPaidAt()).isEqualTo(paidAt);
         assertThat(payment.getNote()).isEqualTo("Test note");
         assertThat(payment.getIdempotencyKey()).isEqualTo(idempotencyKey);
+        assertThat(payment.getPayloadHash()).isNotBlank();
         assertThat(bill.getStatus()).isEqualTo(BillStatus.PAID);
 
         verify(paymentRepository).save(any());
@@ -74,7 +76,26 @@ class PaymentServiceTest {
     }
 
     @Test
-    void returnsExistingPaymentForSameIdempotencyKey() {
+    void acceptsOverdueBill() {
+        RentalContract contract = activeContract();
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
+        bill.setStatus(BillStatus.OVERDUE);
+        UUID billId = bill.getId();
+        Instant paidAt = Instant.now().minusSeconds(3600);
+
+        when(billRepository.findById(billId)).thenReturn(Optional.of(bill));
+        when(contractRepository.findById(contract.getId())).thenReturn(Optional.of(contract));
+        when(paymentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Payment payment = paymentService.confirmPayment(billId, paidAt, null, null);
+
+        assertThat(bill.getStatus()).isEqualTo(BillStatus.PAID);
+        assertThat(payment.getBill().getId()).isEqualTo(billId);
+    }
+
+    @Test
+    void returnsExistingPaymentForSameIdempotencyKeyAndPayload() {
         RentalContract contract = activeContract();
         Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
         UUID billId = bill.getId();
@@ -92,6 +113,22 @@ class PaymentServiceTest {
     }
 
     @Test
+    void throwsIdempotencyConflictForDifferentPayload() {
+        RentalContract contract = activeContract();
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
+        UUID billId = bill.getId();
+        Instant paidAt = Instant.now().minusSeconds(3600);
+        String idempotencyKey = "key-123";
+
+        Payment existingPayment = Payment.confirm(bill, paidAt, "Test note", idempotencyKey);
+
+        when(paymentRepository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.of(existingPayment));
+
+        assertThatThrownBy(() -> paymentService.confirmPayment(billId, paidAt, "Ghi chú khác", idempotencyKey))
+            .isInstanceOf(IdempotencyPayloadMismatchException.class);
+    }
+
+    @Test
     void throwsIdempotencyConflictForDifferentBill() {
         RentalContract contract = activeContract();
         Bill bill1 = Bill.createFrom(contract, 1200L, 1000L, "2026-08");
@@ -105,7 +142,7 @@ class PaymentServiceTest {
         when(paymentRepository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.of(existingPayment));
 
         assertThatThrownBy(() -> paymentService.confirmPayment(billId, paidAt, "Test note", idempotencyKey))
-            .isInstanceOf(IdempotencyConflictException.class);
+            .isInstanceOf(IdempotencyPayloadMismatchException.class);
     }
 
     @Test
@@ -163,9 +200,9 @@ class PaymentServiceTest {
         Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2024-01");
         UUID billId = bill.getId();
 
-        // On time: paidAt on due date (2024-01-05)
+        // Đúng hạn: thanh toán sáng ngày đến hạn (2024-01-05)
         Instant onTimePaidAt = LocalDate.of(2024, 1, 5).atStartOfDay()
-            .atZone(ZoneId.systemDefault()).toInstant();
+            .atZone(BusinessZone.VIETNAM).toInstant();
 
         when(billRepository.findById(billId)).thenReturn(Optional.of(bill));
         when(contractRepository.findById(contract.getId())).thenReturn(Optional.of(contract));
@@ -177,14 +214,33 @@ class PaymentServiceTest {
     }
 
     @Test
+    void countsWholeDueDayAsOnTime() {
+        RentalContract contract = activeContract();
+        Bill bill = Bill.createFrom(contract, 1200L, 1000L, "2024-01");
+        UUID billId = bill.getId();
+
+        // Tối muộn ngày đến hạn vẫn là đúng hạn theo Asia/Ho_Chi_Minh
+        Instant eveningOfDueDay = LocalDate.of(2024, 1, 5).atTime(LocalTime.of(22, 30))
+            .atZone(BusinessZone.VIETNAM).toInstant();
+
+        when(billRepository.findById(billId)).thenReturn(Optional.of(bill));
+        when(contractRepository.findById(contract.getId())).thenReturn(Optional.of(contract));
+        when(paymentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Payment payment = paymentService.confirmPayment(billId, eveningOfDueDay, null, null);
+        assertThat(payment.isOnTime()).isTrue();
+    }
+
+    @Test
     void calculatesLatePayment() {
         RentalContract contract = activeContract();
         Bill bill = Bill.createFrom(contract, 1300L, 1200L, "2024-01");
         UUID billId = bill.getId();
 
-        // Late payment: paidAt after due date but still in past
-        Instant latePaidAt = LocalDate.of(2024, 1, 6).atStartOfDay()
-            .atZone(ZoneId.systemDefault()).toInstant();
+        // Trễ hạn: trưa ngày sau ngày đến hạn
+        Instant latePaidAt = LocalDate.of(2024, 1, 6).atTime(LocalTime.NOON)
+            .atZone(BusinessZone.VIETNAM).toInstant();
 
         when(billRepository.findById(billId)).thenReturn(Optional.of(bill));
         when(contractRepository.findById(contract.getId())).thenReturn(Optional.of(contract));
