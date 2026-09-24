@@ -121,13 +121,13 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Token/chat ID không được commit, log hoặc trả qua API.
+- [x] Token/chat ID không được commit, log hoặc trả qua API.
 - [ ] Tin nhắn thử đến đúng chat cấu hình với timeout và lỗi an toàn.
-- [ ] Adapter được mock được trong test.
+- [x] Adapter được mock được trong test.
 
 **Kiểm chứng:**
 
-- [ ] Test adapter với mock HTTP server.
+- [x] Test adapter với mock HTTP server.
 - [ ] Manual: nhận một tin nhắn thử Telegram thật.
 
 **Phụ thuộc:** Task 1.  

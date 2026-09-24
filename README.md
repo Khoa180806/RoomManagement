@@ -91,6 +91,8 @@ stylesheet `App.css` cũ đã được loại bỏ. Xem [frontend/README.md](fro
 
 - Đây là ứng dụng một người dùng, chưa có đăng nhập; không đưa lên Internet
   trước khi bổ sung xác thực và phân quyền.
-- Telegram token và chat ID sẽ chỉ được lấy qua biến môi trường ở Task 6.
+- Telegram bot token và chat ID chỉ được cấu hình qua biến môi trường
+  `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` trong `.env`; không commit, không log
+  và không trả qua API. Gửi tin nhắn thử từ mục "Telegram nhắc hạn" trên giao diện.
 - Ảnh chứng từ sẽ lưu trên volume local, metadata lưu trong database; không lưu
   ảnh dưới dạng BLOB.
