@@ -18,6 +18,8 @@ import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException
 import com.khoa.roommanagement.billing.payments.exception.InvalidReceiptFileException;
 import com.khoa.roommanagement.billing.payments.exception.PaymentNotFoundException;
 import com.khoa.roommanagement.billing.payments.exception.ReceiptNotFoundException;
+import com.khoa.roommanagement.reminders.telegram.TelegramNotConfiguredException;
+import com.khoa.roommanagement.reminders.telegram.TelegramSendException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,6 +189,18 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handleMaxUploadSize() {
 		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
 				.body(ApiErrorResponse.of("RECEIPT_TOO_LARGE", "Tệp chứng từ không được vượt quá 5 MB.", List.of()));
+	}
+
+	@ExceptionHandler(TelegramNotConfiguredException.class)
+	ResponseEntity<ApiErrorResponse> handleTelegramNotConfigured(TelegramNotConfiguredException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiErrorResponse.of("TELEGRAM_NOT_CONFIGURED", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(TelegramSendException.class)
+	ResponseEntity<ApiErrorResponse> handleTelegramSend(TelegramSendException exception) {
+		return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+				.body(ApiErrorResponse.of("TELEGRAM_SEND_FAILED", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(Exception.class)
