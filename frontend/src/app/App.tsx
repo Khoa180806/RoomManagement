@@ -4,6 +4,7 @@ import { BillForm } from "../features/bills/components/BillForm";
 import { BillList } from "../features/bills/components/BillList";
 import { MeterReadingForm } from "../features/bills/components/MeterReadingForm";
 import { PaymentForm } from "../features/payments/components/PaymentForm";
+import { TelegramSettingsCard } from "../features/settings/components/TelegramSettingsCard";
 import { LoadingState } from "../components/feedback/Feedback";
 import { useRentalWorkspace } from "./useRentalWorkspace";
 
@@ -83,6 +84,7 @@ function App() {
               onNoteChange={workspace.setPaymentNote}
               onSubmit={workspace.confirmPaymentHandler}
             />
+            <TelegramSettingsCard />
           </>
         ) : (
           <ContractForm
