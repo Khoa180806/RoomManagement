@@ -122,13 +122,13 @@
 **Tiêu chí chấp nhận:**
 
 - [x] Token/chat ID không được commit, log hoặc trả qua API.
-- [ ] Tin nhắn thử đến đúng chat cấu hình với timeout và lỗi an toàn.
+- [x] Tin nhắn thử đến đúng chat cấu hình với timeout và lỗi an toàn.
 - [x] Adapter được mock được trong test.
 
 **Kiểm chứng:**
 
 - [x] Test adapter với mock HTTP server.
-- [ ] Manual: nhận một tin nhắn thử Telegram thật.
+- [x] Manual: nhận một tin nhắn thử Telegram thật.
 
 **Phụ thuộc:** Task 1.  
 **Tệp dự kiến:** module `reminders`, `.env.example`, `frontend/src/features/settings/`.  
