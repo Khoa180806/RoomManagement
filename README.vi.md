@@ -22,7 +22,10 @@
 
 Ứng dụng cá nhân, tối ưu cho điện thoại, dành cho một chủ trọ: lưu một hợp đồng thuê đang hiệu lực, ghi chỉ số điện hằng tháng, phát hành hóa đơn bất biến, xác nhận thanh toán kèm ảnh chuyển khoản, và nhận nhắc hạn tự động qua Telegram — kể cả tự hủy hợp đồng khi trễ hạn sang ngày thứ tư.
 
-![Demo trên di động](docs/assets/demo-mobile.gif)
+<p align="center">
+  <a href="docs/assets/demo-mobile.mp4"><video src="docs/assets/demo-mobile.mp4" width="300" controls muted playsinline></video></a>
+  <br/><em>Demo trên di động — 10 giây</em>
+</p>
 
 ## 📑 Mục Lục
 

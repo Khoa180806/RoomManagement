@@ -22,7 +22,10 @@ English · [Tiếng Việt](README.vi.md)
 
 A personal, mobile-first app for a single landlord: store one active rental contract, log monthly electricity meter readings, generate immutable bills, confirm payments with uploadable transfer receipts, and get automatic Telegram reminders before due dates — plus automatic contract termination on the 4th day of non-payment.
 
-![Mobile demo](docs/assets/demo-mobile.gif)
+<p align="center">
+  <a href="docs/assets/demo-mobile.mp4"><video src="docs/assets/demo-mobile.mp4" width="300" controls muted playsinline></video></a>
+  <br/><em>Mobile walkthrough — 10s</em>
+</p>
 
 ## 📑 Table of Contents
 
