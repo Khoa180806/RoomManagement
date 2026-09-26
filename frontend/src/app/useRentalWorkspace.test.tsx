@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import type { FormEvent } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useRentalWorkspace } from "./useRentalWorkspace";
 
@@ -7,6 +8,10 @@ function notFoundResponse() {
     JSON.stringify({ error: { code: "NOT_FOUND", message: "NOT_FOUND", details: [] } }),
     { status: 404, headers: { "Content-Type": "application/json" } },
   );
+}
+
+function fakeSubmitEvent(): FormEvent<HTMLFormElement> {
+  return { preventDefault() {} } as unknown as FormEvent<HTMLFormElement>;
 }
 
 afterEach(() => {
@@ -23,7 +28,7 @@ describe("useRentalWorkspace payment validation", () => {
 
     act(() => result.current.setSelectedBillId("bill-1"));
     act(() => result.current.setPaidAt("2031-12-31"));
-    await act(() => result.current.confirmPaymentHandler({ preventDefault() {} }));
+    await act(() => result.current.confirmPaymentHandler(fakeSubmitEvent()));
 
     expect(result.current.paymentError).toBe("Ngày thanh toán không được ở tương lai.");
     const paymentCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/payments"));
@@ -37,7 +42,7 @@ describe("useRentalWorkspace payment validation", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     act(() => result.current.setSelectedBillId("bill-1"));
-    await act(() => result.current.confirmPaymentHandler({ preventDefault() {} }));
+    await act(() => result.current.confirmPaymentHandler(fakeSubmitEvent()));
 
     expect(result.current.paymentError).toBe("Ngày thanh toán là bắt buộc.");
   });

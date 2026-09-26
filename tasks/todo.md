@@ -186,14 +186,14 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Luồng hợp đồng → hóa đơn → thanh toán → chứng từ → nhắc thử chạy end-to-end.
-- [ ] Không còn lỗi mức critical/high từ native dependency audit có thể khai thác.
-- [ ] Build production thành công và không có lỗi console trong luồng chính.
+- [x] Luồng hợp đồng → hóa đơn → thanh toán → chứng từ → nhắc thử chạy end-to-end.
+- [x] Không còn lỗi mức critical/high từ native dependency audit có thể khai thác.
+- [x] Build production thành công và không có lỗi console trong luồng chính.
 
 **Kiểm chứng:**
 
 - [x] Backend/frontend test, lint, build chạy thành công ở mức hiện có.
-- [ ] Rà soát thủ công checklist bảo mật và accessibility.
+- [x] Rà soát thủ công checklist bảo mật và accessibility.
 
 **Phụ thuộc:** Task 8.  
 **Tệp dự kiến:** `backend/src/test/`, `frontend/e2e/`, CI/tài liệu kiểm thử.  
