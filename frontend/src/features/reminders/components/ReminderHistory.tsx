@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { EmptyState } from "../../../components/feedback/Feedback";
 import { Pagination } from "../../../components/data-display/Pagination";
 import { formatDate, formatMoney } from "../../../shared/lib/format";
-import { getReminders, type Reminder } from "../api";
+import { getReminders, type Reminder, type ReminderPage } from "../api";
 
 const TYPE_LABELS: Record<Reminder["reminderType"], string> = {
   BILL_UPCOMING: "Nhắc trước hạn",
@@ -18,30 +18,32 @@ export function ReminderHistory() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPage = useCallback(async (page: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getReminders(page, 6);
-      setReminders(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(Math.max(1, data.totalPages));
-    } catch (requestError: unknown) {
-      setError(requestError instanceof Error ? requestError.message : "Không thể tải lịch sử nhắc.");
-    } finally {
-      setIsLoading(false);
-    }
+  const applyPage = useCallback((data: ReminderPage) => {
+    setReminders(data.content);
+    setCurrentPage(data.number);
+    setTotalPages(Math.max(1, data.totalPages));
   }, []);
+
+  const loadPage = useCallback(
+    async (page: number) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        applyPage(await getReminders(page, 6));
+      } catch (requestError: unknown) {
+        setError(requestError instanceof Error ? requestError.message : "Không thể tải lịch sử nhắc.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [applyPage],
+  );
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const data = await getReminders(0, 6);
-        if (cancelled) return;
-        setReminders(data.content);
-        setCurrentPage(data.number);
-        setTotalPages(Math.max(1, data.totalPages));
+        if (!cancelled) applyPage(await getReminders(0, 6));
       } catch (requestError: unknown) {
         if (!cancelled) {
           setError(requestError instanceof Error ? requestError.message : "Không thể tải lịch sử nhắc.");
@@ -53,7 +55,7 @@ export function ReminderHistory() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [applyPage]);
 
   return (
     <section className="border border-line bg-paper p-6 shadow-[0_8px_20px_rgba(48,41,30,0.04)] md:p-8" aria-labelledby="reminder-history-title">

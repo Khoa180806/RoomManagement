@@ -2,11 +2,7 @@ import { useState } from "react";
 import { EmptyState, ErrorMessage } from "../../../components/feedback/Feedback";
 import { sendTestTelegramMessage } from "../api";
 
-type TelegramSettingsCardProps = {
-  onSuccess?: () => void;
-};
-
-export function TelegramSettingsCard({ onSuccess }: TelegramSettingsCardProps) {
+export function TelegramSettingsCard() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -18,7 +14,6 @@ export function TelegramSettingsCard({ onSuccess }: TelegramSettingsCardProps) {
     try {
       await sendTestTelegramMessage();
       setSent(true);
-      onSuccess?.();
     } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
