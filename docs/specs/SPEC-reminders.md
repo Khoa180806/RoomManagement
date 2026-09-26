@@ -6,7 +6,7 @@ Tự động gửi thông báo Telegram để người dùng không bỏ lỡ h�
 
 ## Phụ Thuộc
 
-`reminders` đọc hóa đơn và hợp đồng từ `billing`, đọc trạng thái thanh toán từ `payments`. Nó không tự sửa hóa đơn hoặc thanh toán.
+`reminders` đọc hóa đơn và hợp đồng từ `billing`, đọc trạng thái thanh toán từ `payments`. Nó không tự sửa hóa đơn hoặc thanh toán: việc chuyển hóa đơn `PENDING` sang `OVERDUE` là capability của `billing` mà job hằng ngày của `reminders` kích hoạt.
 
 ## Môi Trường Thực Thi Và Cấu Trúc
 
@@ -37,17 +37,18 @@ Tự động gửi thông báo Telegram để người dùng không bỏ lỡ h�
 | --- | --- | --- |
 | `GET` | `/api/reminder-settings` | Lấy cấu hình nhắc hiện hành. |
 | `PUT` | `/api/reminder-settings` | Cập nhật ngày nhắc và trạng thái bật/tắt. |
-| `GET` | `/api/reminders?page=1&pageSize=20` | Xem lịch sử gửi, phân trang. |
+| `GET` | `/api/reminders?page=0&pageSize=20` | Xem lịch sử gửi, phân trang (page tính từ 0). |
 | `POST` | `/api/reminders/test` | Gửi một tin nhắn thử đến chat ID đã cấu hình. |
 
-`POST /api/reminders/test` chỉ được dùng để kiểm chứng cấu hình lúc cài đặt. Input gồm chat ID đã định dạng; backend không cho phép client ghi hoặc đọc bot token.
+`POST /api/reminders/test` chỉ được dùng để kiểm chứng cấu hình lúc cài đặt. Trong MVP, chat ID lấy từ biến môi trường phía server nên endpoint không nhận body; client không thể ghi hoặc đọc bot token/chat ID.
 
 ## Bảo Mật Và Độ Tin Cậy
 
-- Bot token và chat ID lấy từ biến môi trường, được kiểm tra khi ứng dụng khởi động.
+- Bot token và chat ID lấy từ biến môi trường; ứng dụng kiểm tra khi khởi động và ghi cảnh báo nếu chưa cấu hình hoặc token sai định dạng (không bao giờ log giá trị).
 - Chỉ gọi Telegram qua HTTPS; timeout hữu hạn. Phản hồi Telegram là dữ liệu không tin cậy và được kiểm tra trước khi dùng.
-- Lỗi một lần gửi không được làm hỏng scheduler; retry giới hạn, có backoff và ghi trạng thái `FAILED`.
-- Scheduler truy vấn theo thời gian và trạng thái ở database, không dựa vào bộ nhớ; sau khi restart không gửi trùng.
+- Lỗi một lần gửi không được làm hỏng scheduler; retry giới hạn, có backoff và ghi trạng thái `FAILED`. Mỗi lần gửi nằm trong transaction riêng; exception của một bill không làm bỏ qua phần còn lại của ngày.
+- Scheduler truy vấn theo thời gian và trạng thái ở database, không dựa vào bộ nhớ; sau khi restart không gửi trùng. Reminder `FAILED` được retry trong cửa sổ 7 ngày kể từ ngày dự kiến gửi, backoff 2 ngày giữa các lần thử.
+- Cron có thể ghi đè qua biến `APP_REMINDERS_CRON` chỉ để phục vụ kiểm thử local; mặc định không đổi tần suất nghiệp vụ.
 
 ## Kiểm Thử
 

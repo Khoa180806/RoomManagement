@@ -43,7 +43,7 @@ tasks/                              # Kế hoạch và checklist thực hiện
 - Tổng tiền = tiền phòng + điện tiêu thụ × đơn giá điện + tiền nước cố định + phí dịch vụ cố định.
 - Hóa đơn lưu bản sao toàn bộ giá trị, chỉ số điện và mức tiêu thụ đã dùng. Không tính lại quá khứ từ cấu hình hiện hành.
 - Hạn thanh toán là ngày cấu hình của tháng tương ứng. Nếu ngày đó không tồn tại thì dùng ngày cuối tháng; MVP giới hạn 1–28 để loại bỏ trường hợp này.
-- Hóa đơn tạo với trạng thái `PENDING`; chỉ khả năng `payments` mới có thể chuyển sang `PAID` hoặc `OVERDUE`.
+- Hóa đơn tạo với trạng thái `PENDING`; chỉ khả năng `payments` mới có thể chuyển sang `PAID`, và capability của `billing` (do job hằng ngày của scheduler kích hoạt) chuyển `PENDING` sang `OVERDUE` khi đã qua hạn thanh toán.
 - `overdueDays` là số ngày lịch từ ngày sau hạn thanh toán đến ngày hiện tại theo `Asia/Ho_Chi_Minh`. Thanh toán ở ngày trễ thứ 1–3 vẫn hợp lệ; từ ngày trễ thứ 4, hợp đồng chuyển sang `TERMINATED_FOR_NON_PAYMENT`.
 - Sau khi bị hủy vì không thanh toán, không tạo thêm hóa đơn hoặc chỉ số điện cho hợp đồng đó. Không được khôi phục tự động; mọi thay đổi trạng thái sau đó yêu cầu nghiệp vụ mới ngoài MVP.
 

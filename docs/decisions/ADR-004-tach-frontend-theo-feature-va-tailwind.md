@@ -31,6 +31,9 @@ quy tắc nghiệp vụ hoặc hành vi người dùng đã được xác nhận
   `shared/styles/tokens.css` và chỉ giữ global CSS tối thiểu.
 - Giữ `src/App.tsx` là re-export để không phá import/entry point hiện tại.
 - Thêm Vitest/jsdom và Testing Library cho unit/component test nhanh tại frontend.
+- Các màn hình độc lập (cài đặt Telegram, cấu hình nhắc, lịch sử nhắc) được phép
+  tự gọi API qua `shared/api/client.ts` trong component; chỉ luồng chính hợp đồng
+  → chỉ số → hóa đơn → thanh toán đi qua `useRentalWorkspace`.
 
 ## Lựa Chọn Bị Loại
 
