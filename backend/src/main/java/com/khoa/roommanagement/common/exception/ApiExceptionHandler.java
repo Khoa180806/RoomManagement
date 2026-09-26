@@ -1,5 +1,12 @@
 package com.khoa.roommanagement.common.exception;
 
+import com.khoa.roommanagement.auth.AuthController;
+import com.khoa.roommanagement.auth.AuthNotConfiguredException;
+import com.khoa.roommanagement.auth.OtpInvalidException;
+import com.khoa.roommanagement.auth.PhoneMismatchException;
+import com.khoa.roommanagement.auth.RateLimitedException;
+import com.khoa.roommanagement.auth.TotpInvalidException;
+import com.khoa.roommanagement.auth.TotpNotEnabledException;
 import com.khoa.roommanagement.billing.bills.exception.BillNotFoundException;
 import com.khoa.roommanagement.billing.bills.exception.DuplicateBillException;
 import com.khoa.roommanagement.billing.bills.exception.PreviousReadingNotFoundException;
@@ -192,10 +199,52 @@ public class ApiExceptionHandler {
 				.body(ApiErrorResponse.of("RECEIPT_TOO_LARGE", "Tệp chứng từ không được vượt quá 5 MB.", List.of()));
 	}
 
+	@ExceptionHandler(AuthController.UnauthenticatedException.class)
+	ResponseEntity<ApiErrorResponse> handleUnauthenticated(AuthController.UnauthenticatedException exception) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(ApiErrorResponse.of("UNAUTHORIZED", exception.getMessage(), List.of()));
+	}
+
 	@ExceptionHandler(InvalidReminderSettingsException.class)
 	ResponseEntity<ApiErrorResponse> handleInvalidReminderSettings(InvalidReminderSettingsException exception) {
 		return ResponseEntity.unprocessableEntity()
 				.body(ApiErrorResponse.of("REMINDER_SETTINGS_INVALID", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(PhoneMismatchException.class)
+	ResponseEntity<ApiErrorResponse> handlePhoneMismatch(PhoneMismatchException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("PHONE_MISMATCH", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(RateLimitedException.class)
+	ResponseEntity<ApiErrorResponse> handleRateLimited(RateLimitedException exception) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+				.body(ApiErrorResponse.of("RATE_LIMITED", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(OtpInvalidException.class)
+	ResponseEntity<ApiErrorResponse> handleOtpInvalid(OtpInvalidException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("OTP_INVALID", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(TotpInvalidException.class)
+	ResponseEntity<ApiErrorResponse> handleTotpInvalid(TotpInvalidException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("TOTP_INVALID", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(TotpNotEnabledException.class)
+	ResponseEntity<ApiErrorResponse> handleTotpNotEnabled(TotpNotEnabledException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiErrorResponse.of("TOTP_NOT_ENABLED", exception.getMessage(), List.of()));
+	}
+
+	@ExceptionHandler(AuthNotConfiguredException.class)
+	ResponseEntity<ApiErrorResponse> handleAuthNotConfigured(AuthNotConfiguredException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ApiErrorResponse.of("AUTH_NOT_CONFIGURED", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(TelegramNotConfiguredException.class)
