@@ -29,16 +29,15 @@ public class ReminderSettingsService {
 
 	@Transactional
 	public ReminderSettingsResponse updateSettings(UpdateReminderSettingsRequest request) {
-		List<Integer> billDays = normalizeDays(request.billReminderDaysBefore(), "nhắc trước hạn thanh toán");
-		List<Integer> overdueDays = normalizeDays(request.overdueReminderDays(), "nhắc quá hạn");
-		List<Integer> contractDays = normalizeDays(request.contractReminderDaysBefore(), "nhắc hết hợp đồng");
+		ReminderSettings.ReminderDayRule billRule = new ReminderSettings.ReminderDayRule(
+			request.billRemindersEnabled(), normalizeDays(request.billReminderDaysBefore(), "nhắc trước hạn thanh toán"));
+		ReminderSettings.ReminderDayRule overdueRule = new ReminderSettings.ReminderDayRule(
+			request.overdueRemindersEnabled(), normalizeDays(request.overdueReminderDays(), "nhắc quá hạn"));
+		ReminderSettings.ReminderDayRule contractRule = new ReminderSettings.ReminderDayRule(
+			request.contractRemindersEnabled(), normalizeDays(request.contractReminderDaysBefore(), "nhắc hết hợp đồng"));
 
 		ReminderSettings settings = settingsRepository.findSingleton();
-		settings.apply(
-			request.billRemindersEnabled(), billDays,
-			request.overdueRemindersEnabled(), overdueDays,
-			request.contractRemindersEnabled(), contractDays
-		);
+		settings.apply(billRule, overdueRule, contractRule);
 		return toResponse(settingsRepository.save(settings));
 	}
 

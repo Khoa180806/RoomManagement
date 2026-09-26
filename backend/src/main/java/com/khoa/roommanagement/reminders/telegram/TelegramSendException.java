@@ -10,7 +10,8 @@ public class TelegramSendException extends RuntimeException {
 	private final String safeErrorCode;
 
 	public TelegramSendException(String safeMessage) {
-		this(safeMessage, "TELEGRAM_SEND_FAILED");
+		super(safeMessage);
+		this.safeErrorCode = "TELEGRAM_SEND_FAILED";
 	}
 
 	public TelegramSendException(String safeMessage, String safeErrorCode) {

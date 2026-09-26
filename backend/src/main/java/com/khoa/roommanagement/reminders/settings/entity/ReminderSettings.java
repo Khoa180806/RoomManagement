@@ -15,6 +15,10 @@ public class ReminderSettings {
 	/** Singleton: mọi lần đọc/ghi đều thao tác trên bản ghi id = 1. */
 	public static final long SINGLETON_ID = 1L;
 
+	/** Một quy tắc nhắc: bật/tắt kèm danh sách ngày so với mốc. */
+	public record ReminderDayRule(boolean enabled, List<Integer> days) {
+	}
+
 	@Id
 	private Long id;
 
@@ -67,15 +71,13 @@ public class ReminderSettings {
 		return parseDays(contractReminderDaysBefore);
 	}
 
-	public void apply(boolean billRemindersEnabled, List<Integer> billReminderDaysBefore,
-			boolean overdueRemindersEnabled, List<Integer> overdueReminderDays,
-			boolean contractRemindersEnabled, List<Integer> contractReminderDaysBefore) {
-		this.billRemindersEnabled = billRemindersEnabled;
-		this.billReminderDaysBefore = joinDays(billReminderDaysBefore);
-		this.overdueRemindersEnabled = overdueRemindersEnabled;
-		this.overdueReminderDays = joinDays(overdueReminderDays);
-		this.contractRemindersEnabled = contractRemindersEnabled;
-		this.contractReminderDaysBefore = joinDays(contractReminderDaysBefore);
+	public void apply(ReminderDayRule billRule, ReminderDayRule overdueRule, ReminderDayRule contractRule) {
+		this.billRemindersEnabled = billRule.enabled();
+		this.billReminderDaysBefore = joinDays(billRule.days());
+		this.overdueRemindersEnabled = overdueRule.enabled();
+		this.overdueReminderDays = joinDays(overdueRule.days());
+		this.contractRemindersEnabled = contractRule.enabled();
+		this.contractReminderDaysBefore = joinDays(contractRule.days());
 		this.updatedAt = Instant.now();
 	}
 

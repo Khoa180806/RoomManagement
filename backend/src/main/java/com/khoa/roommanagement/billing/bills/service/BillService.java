@@ -2,6 +2,7 @@ package com.khoa.roommanagement.billing.bills.service;
 
 import com.khoa.roommanagement.billing.bills.dto.CreateBillCommand;
 import com.khoa.roommanagement.billing.bills.entity.Bill;
+import com.khoa.roommanagement.billing.bills.entity.BillStatus;
 import com.khoa.roommanagement.billing.bills.exception.BillNotFoundException;
 import com.khoa.roommanagement.billing.bills.exception.DuplicateBillException;
 import com.khoa.roommanagement.billing.bills.exception.PreviousReadingNotFoundException;
@@ -74,8 +75,7 @@ public class BillService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Bill> getBills(int page, int size, String period) {
-		int safeSize = Math.min(size, MAX_PAGE_SIZE);
+	public Page<Bill> getBills(int page, int size, String period) {		int safeSize = Math.min(size, MAX_PAGE_SIZE);
 		RentalContract contract = getActiveContract();
 		
 		if (period != null && !period.isEmpty()) {
@@ -90,6 +90,23 @@ public class BillService {
 			contract.getId(),
 			PageRequest.of(page, safeSize)
 		);
+	}
+
+	/**
+	 * Chuyển hóa đơn PENDING đã qua hạn thanh toán sang OVERDUE. Capability
+	 * thuộc billing; job nhắc hạn chỉ kích hoạt hằng ngày.
+	 */
+	@Transactional
+	public int markOverdueBills(java.time.LocalDate today) {
+		int marked = 0;
+		for (Bill bill : billRepository.findByStatusIn(List.of(BillStatus.PENDING))) {
+			if (bill.getDueDate().isBefore(today)) {
+				bill.setStatus(BillStatus.OVERDUE);
+				billRepository.save(bill);
+				marked += 1;
+			}
+		}
+		return marked;
 	}
 
 	private RentalContract getActiveContract() {

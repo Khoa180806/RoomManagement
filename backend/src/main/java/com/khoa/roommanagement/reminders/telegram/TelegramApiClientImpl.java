@@ -34,7 +34,17 @@ public class TelegramApiClientImpl implements TelegramApiClient {
 
     @Autowired
     public TelegramApiClientImpl(TelegramProperties properties) {
-        this(properties.botToken(), properties.apiBaseUrl(), CONNECT_TIMEOUT, READ_TIMEOUT);
+        // Spec: chỉ gọi Telegram qua HTTPS; mock server test dùng constructor
+        // package-private để cho phép http trên loopback.
+        this(properties.botToken(), requireHttps(properties.apiBaseUrl()), CONNECT_TIMEOUT, READ_TIMEOUT);
+    }
+
+    private static String requireHttps(String apiBaseUrl) {
+        if (apiBaseUrl == null || !apiBaseUrl.startsWith("https://")) {
+            throw new IllegalStateException(
+                "TELEGRAM_API_BASE_URL phải dùng HTTPS, nhận được: [" + apiBaseUrl + "]");
+        }
+        return apiBaseUrl;
     }
 
     TelegramApiClientImpl(String botToken, String baseUrl, Duration connectTimeout, Duration readTimeout) {

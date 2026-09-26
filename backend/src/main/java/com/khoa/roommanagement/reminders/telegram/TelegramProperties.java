@@ -1,6 +1,7 @@
 package com.khoa.roommanagement.reminders.telegram;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * Cấu hình Telegram chỉ nhận giá trị từ biến môi trường. Token và chat ID
@@ -10,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record TelegramProperties(
     String botToken,
     String chatId,
-    String apiBaseUrl
+    @DefaultValue("https://api.telegram.org") String apiBaseUrl
 ) {
 
     public static final String DEFAULT_API_BASE_URL = "https://api.telegram.org";
