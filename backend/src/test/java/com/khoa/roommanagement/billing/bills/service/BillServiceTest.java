@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.khoa.roommanagement.billing.bills.dto.CreateBillCommand;
 import com.khoa.roommanagement.billing.bills.entity.Bill;
+import com.khoa.roommanagement.billing.bills.entity.BillStatus;
 import com.khoa.roommanagement.billing.bills.exception.DuplicateBillException;
 import com.khoa.roommanagement.billing.bills.exception.PreviousReadingNotFoundException;
 import com.khoa.roommanagement.billing.bills.exception.ReadingNotFoundException;
@@ -139,6 +140,22 @@ class BillServiceTest {
 			.isInstanceOf(DuplicateBillException.class);
 
 		verify(billRepository, never()).save(any());
+	}
+
+	@Test
+	void marksOnlyPastDuePendingBillsAsOverdue() {
+		RentalContract contract = activeContract();
+		Bill overduePending = Bill.createFrom(contract, 1_200L, 1_000L, "2026-08");
+		Bill stillWithinDue = Bill.createFrom(contract, 1_300L, 1_200L, "2026-10");
+		when(billRepository.findByStatusIn(List.of(BillStatus.PENDING)))
+			.thenReturn(List.of(overduePending, stillWithinDue));
+		when(billRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+		int marked = billService.markOverdueBills(LocalDate.of(2026, 9, 7));
+
+		assertThat(marked).isEqualTo(1);
+		assertThat(overduePending.getStatus()).isEqualTo(BillStatus.OVERDUE);
+		assertThat(stillWithinDue.getStatus()).isEqualTo(BillStatus.PENDING);
 	}
 
 	@Test

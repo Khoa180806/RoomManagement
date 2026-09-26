@@ -31,10 +31,12 @@ class ReminderRepositoryIntegrationTest {
 		UUID billId = UUID.randomUUID();
 		LocalDate targetDate = LocalDate.of(2026, 9, 6);
 
-		Reminder first = Reminder.create(ReminderType.BILL_OVERDUE, billId, targetDate, ReminderChannel.TELEGRAM);
+		Reminder first = Reminder.create(ReminderType.BILL_OVERDUE, billId, targetDate,
+			ReminderChannel.TELEGRAM, "msg");
 		reminderRepository.saveAndFlush(first);
 
-		Reminder duplicate = Reminder.create(ReminderType.BILL_OVERDUE, billId, targetDate, ReminderChannel.TELEGRAM);
+		Reminder duplicate = Reminder.create(ReminderType.BILL_OVERDUE, billId, targetDate,
+			ReminderChannel.TELEGRAM, "msg");
 		// Sau khi session hỏng do violation không truy vấn tiếp được trong cùng
 		// transaction; việc chặn trùng đã được chứng minh bởi exception dưới đây.
 		assertThatThrownBy(() -> reminderRepository.saveAndFlush(duplicate))
@@ -46,10 +48,21 @@ class ReminderRepositoryIntegrationTest {
 		UUID billId = UUID.randomUUID();
 
 		reminderRepository.saveAndFlush(Reminder.create(
-			ReminderType.BILL_OVERDUE, billId, LocalDate.of(2026, 9, 6), ReminderChannel.TELEGRAM));
+			ReminderType.BILL_OVERDUE, billId, LocalDate.of(2026, 9, 6), ReminderChannel.TELEGRAM, "msg"));
 		reminderRepository.saveAndFlush(Reminder.create(
-			ReminderType.BILL_OVERDUE, billId, LocalDate.of(2026, 9, 7), ReminderChannel.TELEGRAM));
+			ReminderType.BILL_OVERDUE, billId, LocalDate.of(2026, 9, 7), ReminderChannel.TELEGRAM, "msg"));
 
 		assertThat(reminderRepository.count()).isEqualTo(2);
+	}
+
+	@Test
+	void allowsSameKeyWithDifferentStatus() {
+		UUID billId = UUID.randomUUID();
+		Reminder reminder = Reminder.create(
+			ReminderType.BILL_UPCOMING, billId, LocalDate.of(2026, 9, 26), ReminderChannel.TELEGRAM, "msg");
+
+		assertThat(reminder.getStatus()).isEqualTo(com.khoa.roommanagement.reminders.reminder.entity.ReminderStatus.PENDING);
+		assertThat(reminder.canRetry(LocalDate.of(2026, 9, 24))).isFalse();
+		assertThat(reminder.canRetry(LocalDate.of(2026, 9, 26))).isTrue();
 	}
 }

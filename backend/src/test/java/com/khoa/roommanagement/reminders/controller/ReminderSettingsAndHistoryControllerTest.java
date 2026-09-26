@@ -105,7 +105,7 @@ class ReminderSettingsAndHistoryControllerTest {
 	@Test
 	void returnsReminderHistoryPage() throws Exception {
 		Reminder sent = Reminder.create(ReminderType.BILL_OVERDUE, UUID.randomUUID(),
-			LocalDate.of(2026, 9, 6), ReminderChannel.TELEGRAM);
+			LocalDate.of(2026, 9, 6), ReminderChannel.TELEGRAM, "Nội dung nhắc quá hạn");
 		sent.markAttempt();
 		sent.markSent(Instant.now());
 		Mockito.when(reminderHistoryService.getReminderHistory(0, 20))

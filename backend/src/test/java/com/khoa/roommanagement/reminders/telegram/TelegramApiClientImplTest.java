@@ -58,8 +58,17 @@ class TelegramApiClientImplTest {
         return new TelegramApiClientImpl(BOT_TOKEN, baseUrl, Duration.ofSeconds(2), Duration.ofSeconds(2));
     }
 
-    @Test
-    void sendsMessageWithTokenOnlyInUrl() {
+	@Test
+	void rejectsNonHttpsBaseUrlInProductionConstructor() {
+		assertThatThrownBy(() -> new TelegramApiClientImpl(
+			new TelegramProperties(BOT_TOKEN, "987654321", "http://api.telegram.org")))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("HTTPS")
+			.hasMessageNotContaining(BOT_TOKEN);
+	}
+
+	@Test
+	void sendsMessageWithTokenOnlyInUrl() {
         respondWith(200, """
             {"ok": true, "result": {"message_id": 42}}
             """);
