@@ -1,0 +1,8 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Room Management logo">
+  <rect x="4" y="4" width="112" height="112" rx="24" fill="#29271f"/>
+  <path d="M60 22 L98 54 L88 54 L88 96 L32 96 L32 54 L22 54 Z" fill="#ae5434"/>
+  <rect x="52" y="70" width="16" height="26" rx="2" fill="#29271f"/>
+  <rect x="38" y="60" width="12" height="10" rx="1.5" fill="#fffdfa"/>
+  <rect x="70" y="60" width="12" height="10" rx="1.5" fill="#fffdfa"/>
+  <text x="60" y="112" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="13" font-weight="700" letter-spacing="3" fill="#f4efe5">ROOM</text>
+</svg>

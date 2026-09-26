@@ -205,14 +205,14 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Người mới có thể chạy dự án theo README với `.env.example`.
-- [ ] README nêu rõ kiến trúc, giới hạn MVP và cách kiểm thử.
-- [ ] Có mô tả CV nhấn vào business logic, scheduler, Telegram và bảo mật upload.
+- [x] Người mới có thể chạy dự án theo README với `.env.example`.
+- [x] README nêu rõ kiến trúc, giới hạn MVP và cách kiểm thử.
+- [x] Có mô tả CV nhấn vào business logic, scheduler, Telegram và bảo mật upload.
 
 **Kiểm chứng:**
 
-- [ ] Thực hiện lại hướng dẫn trong môi trường sạch.
-- [ ] Review tài liệu không chứa bí mật hoặc dữ liệu chứng từ thật.
+- [x] Thực hiện lại hướng dẫn trong môi trường sạch.
+- [x] Review tài liệu không chứa bí mật hoặc dữ liệu chứng từ thật.
 
 **Phụ thuộc:** Task 9.  
 **Tệp dự kiến:** `README.md`, `docs/`, ảnh chụp màn hình.  
