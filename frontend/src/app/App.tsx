@@ -5,6 +5,8 @@ import { BillList } from "../features/bills/components/BillList";
 import { MeterReadingForm } from "../features/bills/components/MeterReadingForm";
 import { PaymentForm } from "../features/payments/components/PaymentForm";
 import { TelegramSettingsCard } from "../features/settings/components/TelegramSettingsCard";
+import { ReminderSettingsCard } from "../features/settings/components/ReminderSettingsCard";
+import { ReminderHistory } from "../features/reminders/components/ReminderHistory";
 import { LoadingState } from "../components/feedback/Feedback";
 import { useRentalWorkspace } from "./useRentalWorkspace";
 
@@ -85,6 +87,8 @@ function App() {
               onSubmit={workspace.confirmPaymentHandler}
             />
             <TelegramSettingsCard />
+            <ReminderSettingsCard />
+            <ReminderHistory />
           </>
         ) : (
           <ContractForm
