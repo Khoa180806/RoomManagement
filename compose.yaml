@@ -30,6 +30,7 @@ services:
       ALLOWED_ORIGINS: http://localhost:${FRONTEND_PORT}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      APP_REMINDERS_CRON: ${APP_REMINDERS_CRON:-0 0 9 * * *}
     ports:
       - "${BACKEND_PORT}:8080"
     volumes:

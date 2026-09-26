@@ -155,9 +155,9 @@
 
 ## Checkpoint: Sau Tuần 3
 
-- [ ] Telegram gửi thật và lịch sử `SENT`/`FAILED` hiển thị đúng.
-- [ ] Job chạy lại không tạo tin trùng.
-- [ ] Review timezone `Asia/Ho_Chi_Minh` và lịch nhắc mặc định.
+- [x] Telegram gửi thật và lịch sử `SENT`/`FAILED` hiển thị đúng.
+- [x] Job chạy lại không tạo tin trùng.
+- [x] Review timezone `Asia/Ho_Chi_Minh` và lịch nhắc mặc định.
 
 ## Tuần 4 — Hoàn Thiện Và Bàn Giao
 
