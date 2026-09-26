@@ -237,14 +237,14 @@ Plan chi tiết: `docs/PHASE-2-PLAN.md`
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Toàn bộ `/api/**` (trừ auth + health) trả 401 khi chưa đăng nhập.
-- [ ] Request OTP: khớp SĐT mới gửi qua Telegram, rate-limit 3 lần/15 phút.
-- [ ] OTP sai/hết hạn nhận lỗi có cấu trúc; TOTP dự phòng bật được trong Settings.
+- [x] Toàn bộ `/api/**` (trừ auth + health) trả 401 khi chưa đăng nhập.
+- [x] Request OTP: khớp SĐT mới gửi qua Telegram, rate-limit 3 lần/15 phút.
+- [x] OTP sai/hết hạn nhận lỗi có cấu trúc; TOTP dự phòng bật được trong Settings.
 
 **Kiểm chứng:**
 
-- [ ] Unit test OTP flow + rate-limit + TOTP với clock cố định.
-- [ ] Integration test: chưa đăng nhập 401 → đăng nhập → truy cập được API.
+- [x] Unit test OTP flow + rate-limit + TOTP với clock cố định.
+- [x] Integration test: chưa đăng nhập 401 → đăng nhập → truy cập được API.
 
 **Phụ thuộc:** MVP hoàn thành.  
 **Tệp dự kiến:** module `auth`, migration owner_account, `SecurityConfig`.  
