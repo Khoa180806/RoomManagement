@@ -15,7 +15,7 @@ export function BillCard({ bill }: { bill: Bill }) {
     <article className="mb-4 rounded-[0.35rem] border border-line bg-sand p-4">
       <button
         type="button"
-        className="group flex w-full items-center justify-between gap-3 text-left focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-3"
+        className="group flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 text-left focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-3"
         aria-expanded={isOpen}
         aria-controls={detailsId}
         onClick={() => setIsOpen((current) => !current)}

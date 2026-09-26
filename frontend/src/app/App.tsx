@@ -15,11 +15,17 @@ function App() {
 
   return (
     <main className="min-h-dvh">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[0.35rem] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white"
+      >
+        Tới nội dung chính
+      </a>
       <header className="mx-auto flex max-w-6xl items-center justify-between border-b border-line px-6 py-4">
-        <a className="flex items-center gap-2.5 text-sm font-bold text-ink no-underline" href="#main-content">
-          <span className="rounded-[0.4rem] bg-ink p-[0.33rem] font-display text-[0.7rem] tracking-[0.05em] text-white">RM</span>
+        <span className="flex items-center gap-2.5 text-sm font-bold text-ink">
+          <span className="rounded-[0.4rem] bg-ink p-[0.33rem] font-display text-[0.7rem] tracking-[0.05em] text-white" aria-hidden="true">RM</span>
           <span>Nhà trọ của tôi</span>
-        </a>
+        </span>
         <span className="text-[0.8125rem] text-muted">Quản lý phòng trọ</span>
       </header>
 

@@ -167,14 +167,14 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Luồng chính dùng tốt ở 375 px, 768 px và desktop.
-- [ ] Form có nhãn, lỗi dễ hiểu, focus rõ ràng và thao tác bằng bàn phím.
-- [ ] Không có nội dung bị cắt hoặc thao tác quan trọng chỉ dựa vào màu.
+- [x] Luồng chính dùng tốt ở 375 px, 768 px và desktop.
+- [x] Form có nhãn, lỗi dễ hiểu, focus rõ ràng và thao tác bằng bàn phím.
+- [x] Không có nội dung bị cắt hoặc thao tác quan trọng chỉ dựa vào màu.
 
 **Kiểm chứng:**
 
-- [ ] Manual responsive ở ba kích thước.
-- [ ] Browser test kiểm tra console error và keyboard navigation.
+- [x] Manual responsive ở ba kích thước.
+- [x] Browser test kiểm tra console error và keyboard navigation.
 
 **Phụ thuộc:** Task 3, Task 5, Task 7.  
 **Tệp dự kiến:** `frontend/src/app/`, component dùng chung, style/tokens.  

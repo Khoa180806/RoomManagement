@@ -187,6 +187,14 @@ export function useRentalWorkspace() {
       setPaymentError("Ngày thanh toán là bắt buộc.");
       return;
     }
+    // Backend là biên kiểm tra cuối; client chặn sớm ngày tương lai (trước đây
+    // là max của input date, giờ dùng DateSelect tự viết).
+    const todayIso = new Date().toISOString().split("T")[0];
+    const paidAtIso = new Date(paidAt).toISOString().split("T")[0];
+    if (paidAtIso > todayIso) {
+      setPaymentError("Ngày thanh toán không được ở tương lai.");
+      return;
+    }
 
     setIsConfirmingPayment(true);
     const idempotencyKey = paymentIdempotencyKey ?? createIdempotencyKey();
