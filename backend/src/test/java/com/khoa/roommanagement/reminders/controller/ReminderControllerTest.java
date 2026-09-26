@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.khoa.roommanagement.common.exception.ApiExceptionHandler;
+import com.khoa.roommanagement.reminders.service.ReminderHistoryService;
 import com.khoa.roommanagement.reminders.service.TelegramTestMessageService;
 import com.khoa.roommanagement.reminders.telegram.TelegramNotConfiguredException;
 import com.khoa.roommanagement.reminders.telegram.TelegramSendException;
@@ -26,6 +27,9 @@ class ReminderControllerTest {
 
     @MockitoBean
     private TelegramTestMessageService telegramTestMessageService;
+
+    @MockitoBean
+    private ReminderHistoryService reminderHistoryService;
 
     @Test
     void sendsTestMessageSuccessfully() throws Exception {
