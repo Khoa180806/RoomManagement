@@ -18,6 +18,7 @@ import com.khoa.roommanagement.billing.payments.exception.InvalidPaidAtException
 import com.khoa.roommanagement.billing.payments.exception.InvalidReceiptFileException;
 import com.khoa.roommanagement.billing.payments.exception.PaymentNotFoundException;
 import com.khoa.roommanagement.billing.payments.exception.ReceiptNotFoundException;
+import com.khoa.roommanagement.reminders.settings.exception.InvalidReminderSettingsException;
 import com.khoa.roommanagement.reminders.telegram.TelegramNotConfiguredException;
 import com.khoa.roommanagement.reminders.telegram.TelegramSendException;
 import java.util.List;
@@ -189,6 +190,12 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiErrorResponse> handleMaxUploadSize() {
 		return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
 				.body(ApiErrorResponse.of("RECEIPT_TOO_LARGE", "Tệp chứng từ không được vượt quá 5 MB.", List.of()));
+	}
+
+	@ExceptionHandler(InvalidReminderSettingsException.class)
+	ResponseEntity<ApiErrorResponse> handleInvalidReminderSettings(InvalidReminderSettingsException exception) {
+		return ResponseEntity.unprocessableEntity()
+				.body(ApiErrorResponse.of("REMINDER_SETTINGS_INVALID", exception.getMessage(), List.of()));
 	}
 
 	@ExceptionHandler(TelegramNotConfiguredException.class)
