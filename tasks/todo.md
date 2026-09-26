@@ -273,12 +273,12 @@ Plan chi tiết: `docs/PHASE-2-PLAN.md`
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Không còn trang dọc dài; mỗi trang có skeleton/empty state riêng.
-- [ ] Bottom nav mobile, sidebar desktop; điều hướng keyboard tốt.
+- [x] Không còn trang dọc dài; mỗi trang có skeleton/empty state riêng.
+- [x] Bottom nav mobile, sidebar desktop; điều hướng keyboard tốt.
 
 **Kiểm chứng:**
 
-- [ ] Browser test 375/768/1280; keyboard navigation.
+- [x] Browser test 375/768/1280; keyboard navigation.
 
 **Phụ thuộc:** Task 12.  
 **Tệp dự kiến:** `frontend/src/app/`, `frontend/src/components/layout/`.  
