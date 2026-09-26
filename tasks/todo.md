@@ -140,14 +140,14 @@
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Tạo đúng loại nhắc trước hạn, quá hạn và hết hợp đồng theo cấu hình.
-- [ ] Chạy lại job không gửi trùng cùng một reminder trong ngày.
-- [ ] Ngày trễ thứ 1–3 có cảnh báo; ngày trễ thứ 4 chưa thanh toán sẽ hủy hợp đồng và chặn thanh toán mới.
+- [x] Tạo đúng loại nhắc trước hạn, quá hạn và hết hợp đồng theo cấu hình.
+- [x] Chạy lại job không gửi trùng cùng một reminder trong ngày.
+- [x] Ngày trễ thứ 1–3 có cảnh báo; ngày trễ thứ 4 chưa thanh toán sẽ hủy hợp đồng và chặn thanh toán mới.
 
 **Kiểm chứng:**
 
-- [ ] Unit test ngày nhắc, ngưỡng ba ngày và hủy ở ngày trễ thứ tư với clock cố định.
-- [ ] Integration test unique constraint và retry `FAILED`.
+- [x] Unit test ngày nhắc, ngưỡng ba ngày và hủy ở ngày trễ thứ tư với clock cố định.
+- [x] Integration test unique constraint và retry `FAILED`.
 
 **Phụ thuộc:** Task 3, Task 4, Task 6.  
 **Tệp dự kiến:** module `reminders`, migration reminder, `frontend/src/features/reminders/`.  
