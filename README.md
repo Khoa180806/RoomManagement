@@ -22,11 +22,6 @@ English · [Tiếng Việt](README.vi.md)
 
 A personal, mobile-first app for a single landlord: store one active rental contract, log monthly electricity meter readings, generate immutable bills, confirm payments with uploadable transfer receipts, and get automatic Telegram reminders before due dates — plus automatic contract termination on the 4th day of non-payment.
 
-<p align="center">
-  <a href="docs/assets/demo-mobile.mp4"><video src="docs/assets/demo-mobile.mp4" width="300" controls muted playsinline></video></a>
-  <br/><em>Mobile walkthrough — 10s</em>
-</p>
-
 ## 📑 Table of Contents
 
 - [✨ Features](#-features)
@@ -42,7 +37,6 @@ A personal, mobile-first app for a single landlord: store one active rental cont
 - [📱 Telegram Setup](#-telegram-setup)
 - [🔐 Security Notes](#-security-notes)
 - [⚠️ MVP Limitations](#️-mvp-limitations)
-- [💼 CV Highlights](#-cv-highlights)
 
 ## ✨ Features
 
@@ -228,7 +222,3 @@ The token never appears in logs, API responses or error messages — only inside
 - History pagination is partly client-side; no server-side search.
 - One receipt per payment, one active contract, single landlord — by design.
 - Reminder settings are global (single user).
-
-## 💼 CV Highlights
-
-Interview-ready write-ups of the trickiest parts (billing snapshots, payment idempotency, the reminder scheduler and upload hardening) live in [docs/CV-HIGHLIGHTS.md](docs/CV-HIGHLIGHTS.md).

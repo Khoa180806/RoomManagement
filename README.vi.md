@@ -22,11 +22,6 @@
 
 Ứng dụng cá nhân, tối ưu cho điện thoại, dành cho một chủ trọ: lưu một hợp đồng thuê đang hiệu lực, ghi chỉ số điện hằng tháng, phát hành hóa đơn bất biến, xác nhận thanh toán kèm ảnh chuyển khoản, và nhận nhắc hạn tự động qua Telegram — kể cả tự hủy hợp đồng khi trễ hạn sang ngày thứ tư.
 
-<p align="center">
-  <a href="docs/assets/demo-mobile.mp4"><video src="docs/assets/demo-mobile.mp4" width="300" controls muted playsinline></video></a>
-  <br/><em>Demo trên di động — 10 giây</em>
-</p>
-
 ## 📑 Mục Lục
 
 - [✨ Tính Năng](#-tính-năng)
@@ -42,7 +37,6 @@
 - [📱 Cấu Hình Telegram](#-cấu-hình-telegram)
 - [🔐 Lưu Ý Bảo Mật](#-lưu-ý-bảo-mật)
 - [⚠️ Giới Hạn MVP](#️-giới-hạn-mvp)
-- [💼 Nội Dung CV](#-nội-dung-cv)
 
 ## ✨ Tính Năng
 
@@ -228,7 +222,3 @@ Token không bao giờ xuất hiện trong log, response API hay thông báo l�
 - Một phần phân trang lịch sử làm phía client; chưa có tìm kiếm server-side.
 - Một chứng từ mỗi thanh toán, một hợp đồng active, một chủ trọ — là chủ đích thiết kế.
 - Cấu hình nhắc là toàn cục (một người dùng).
-
-## 💼 Nội Dung CV
-
-Các đoạn mô tả sẵn để đưa vào CV/phỏng vấn (business logic, scheduler, Telegram, bảo mật upload) nằm ở [docs/CV-HIGHLIGHTS.md](docs/CV-HIGHLIGHTS.md).

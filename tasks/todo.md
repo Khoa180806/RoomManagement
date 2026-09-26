@@ -207,7 +207,7 @@
 
 - [x] Người mới có thể chạy dự án theo README với `.env.example`.
 - [x] README nêu rõ kiến trúc, giới hạn MVP và cách kiểm thử.
-- [x] Có mô tả CV nhấn vào business logic, scheduler, Telegram và bảo mật upload.
+- [ ] Có mô tả CV nhấn vào business logic, scheduler, Telegram và bảo mật upload. *(người dùng yêu cầu bỏ khỏi README)*
 
 **Kiểm chứng:**
 
