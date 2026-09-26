@@ -256,12 +256,12 @@ Plan chi tiết: `docs/PHASE-2-PLAN.md`
 
 **Tiêu chí chấp nhận:**
 
-- [ ] Chưa đăng nhập vào /app bị chuyển về /login; 401 từ API cũng vậy.
-- [ ] Login flow SĐT → OTP hoạt động; trạng thái lỗi hiển thị rõ.
+- [x] Chưa đăng nhập vào /app bị chuyển về /login; 401 từ API cũng vậy.
+- [x] Login flow SĐT → OTP hoạt động; trạng thái lỗi hiển thị rõ.
 
 **Kiểm chứng:**
 
-- [ ] Component test login flow; manual qua Docker.
+- [x] Component test login flow; manual qua Docker.
 
 **Phụ thuộc:** Task 11.  
 **Tệp dự kiến:** `frontend/src/features/auth/`, `frontend/src/app/`.  
