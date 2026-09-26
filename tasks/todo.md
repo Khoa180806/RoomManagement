@@ -224,3 +224,175 @@
 - [x] Backend/frontend test, lint và build thành công.
 - [x] Demo được toàn bộ luồng trên điện thoại.
 - [x] Người dùng review và chấp nhận MVP trước khi sang Phase 2.
+
+---
+
+# Phase 2 — Tách Trang Chủ / App Riêng, Dashboard, Cài Đặt
+
+Plan chi tiết: `docs/PHASE-2-PLAN.md`
+
+## Task 11: Auth backend — SĐT + OTP Telegram, TOTP dự phòng
+
+**Mô tả:** Spring Security + session JDBC; đăng nhập bằng SĐT chủ nhà + OTP gửi qua Telegram; dự phòng TOTP authenticator; rate-limit; seed tài khoản từ env.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Toàn bộ `/api/**` (trừ auth + health) trả 401 khi chưa đăng nhập.
+- [ ] Request OTP: khớp SĐT mới gửi qua Telegram, rate-limit 3 lần/15 phút.
+- [ ] OTP sai/hết hạn nhận lỗi có cấu trúc; TOTP dự phòng bật được trong Settings.
+
+**Kiểm chứng:**
+
+- [ ] Unit test OTP flow + rate-limit + TOTP với clock cố định.
+- [ ] Integration test: chưa đăng nhập 401 → đăng nhập → truy cập được API.
+
+**Phụ thuộc:** MVP hoàn thành.  
+**Tệp dự kiến:** module `auth`, migration owner_account, `SecurityConfig`.  
+**Quy mô:** L.
+
+## Task 12: Auth frontend — trang login 2 bước
+
+**Mô tả:** Trang /login (SĐT → OTP), guard route, interceptor 401 redirect, logout.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Chưa đăng nhập vào /app bị chuyển về /login; 401 từ API cũng vậy.
+- [ ] Login flow SĐT → OTP hoạt động; trạng thái lỗi hiển thị rõ.
+
+**Kiểm chứng:**
+
+- [ ] Component test login flow; manual qua Docker.
+
+**Phụ thuộc:** Task 11.  
+**Tệp dự kiến:** `frontend/src/features/auth/`, `frontend/src/app/`.  
+**Quy mô:** M.
+
+## Task 13: App shell — Router + điều hướng
+
+**Mô tả:** React Router; bottom nav mobile / sidebar desktop; dồn các section cũ vào /app (dashboard trống tạm), /app/bills, /app/payments.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Không còn trang dọc dài; mỗi trang có skeleton/empty state riêng.
+- [ ] Bottom nav mobile, sidebar desktop; điều hướng keyboard tốt.
+
+**Kiểm chứng:**
+
+- [ ] Browser test 375/768/1280; keyboard navigation.
+
+**Phụ thuộc:** Task 12.  
+**Tệp dự kiến:** `frontend/src/app/`, `frontend/src/components/layout/`.  
+**Quy mô:** M.
+
+## Task 14: Landing song ngữ + animation
+
+**Mô tả:** Trang chủ portfolio VI/EN với i18n switcher, Framer Motion, lucide icons, dữ liệu mẫu hardcode, nút Đăng nhập.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Song ngữ chuyển đổi được, lưu localStorage; dữ liệu mẫu không gọi API.
+- [ ] Animation chuyên nghiệp, không ảnh hưởng hiệu năng mobile.
+
+**Kiểm chứng:**
+
+- [ ] Browser test desktop + mobile; kiểm tra không có call API từ landing.
+
+**Phụ thuộc:** Task 13.  
+**Tệp dự kiến:** `frontend/src/features/landing/`, `frontend/src/i18n/`.  
+**Quy mô:** L.
+
+## Task 15: Dashboard
+
+**Mô tả:** Endpoint `GET /api/dashboard/summary`; stat mới (tổng kỳ + tổng tiền đã bỏ ra, kỳ điện cao/thấp nhất); biểu đồ Recharts; danh sách sắp đến hạn.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Số liệu khớp tổng hợp từ hóa đơn thật; biểu đồ 12 tháng.
+- [ ] Copy theo góc nhìn người thuê phòng.
+
+**Kiểm chứng:**
+
+- [ ] Unit test tổng hợp; manual với dữ liệu thật.
+
+**Phụ thuộc:** Task 13.  
+**Tệp dự kiến:** module `billing/dashboard`, `frontend/src/features/dashboard/`.  
+**Quy mô:** M.
+
+## Task 16: Trang Cài đặt
+
+**Mô tả:** Gom hợp đồng (PATCH + gia hạn), Telegram, nhắc hạn, TOTP/tài khoản vào /app/settings.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] PATCH hợp đồng áp dụng kỳ sau, snapshot cũ bất biến; gia hạn khi hết hạn.
+- [ ] Bật/tắt TOTP trong Settings; đổi SĐT.
+
+**Kiểm chứng:**
+
+- [ ] Unit test PATCH + TOTP enable/disable; manual flow.
+
+**Phụ thuộc:** Task 11, Task 13.  
+**Tệp dự kiến:** module `billing/contracts`, `frontend/src/features/settings/`.  
+**Quy mô:** M.
+
+## Task 17: Icon + animation trong app + UX polish
+
+**Mô tả:** lucide-react toàn app, chuyển trang mượt, FAB hành động chính, skeleton từng trang.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Icon thống nhất; animation tinh tế không phá tính công việc.
+
+**Kiểm chứng:**
+
+- [ ] Browser test mobile + desktop.
+
+**Phụ thuộc:** Task 13.  
+**Quy mô:** S.
+
+## Task 18: Production guide — Cloudflare Tunnel + domain
+
+**Mô tả:** Guide mua domain, Cloudflare Tunnel về máy nhà, HTTPS, backup volume, security review cuối.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Tài liệu từng bước chạy được từ máy sạch; backup/restore volume.
+
+**Kiểm chứng:**
+
+- [ ] Review tài liệu không chứa bí mật.
+
+**Phụ thuộc:** Task 11–17.  
+**Tệp dự kiến:** `docs/DEPLOYMENT.md`, `docker-compose.prod.yml`.  
+**Quy mô:** S.
+
+## Task 19: CI/CD GitHub Actions
+
+**Mô tả:** CI push/PR: backend verify, frontend lint/test/build, build Docker; merge main: push ảnh GHCR; badge README.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] CI xanh trên main; ảnh GHCR cập nhật sau merge.
+
+**Kiểm chứng:**
+
+- [ ] Workflow chạy thật trên GitHub; badge hiển thị.
+
+**Phụ thuộc:** Task 10.  
+**Tệp dự kiến:** `.github/workflows/ci.yml`.  
+**Quy mô:** M.
+
+## Task 20: README rewrite Phase 2
+
+**Mô tả:** Cập nhật README song ngữ: auth, dashboard, trang chủ, CI badge, deploy production.
+
+**Tiêu chí chấp nhận:**
+
+- [ ] Hướng dẫn chạy từ đầu khớp thực tế Phase 2.
+
+**Kiểm chứng:**
+
+- [ ] Review không chứa bí mật.
+
+**Phụ thuộc:** Task 11–19.  
+**Quy mô:** S.
