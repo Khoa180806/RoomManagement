@@ -220,7 +220,7 @@
 
 ## Checkpoint: Hoàn Thành MVP
 
-- [ ] Tất cả tiêu chí trong ba đặc tả đều đạt.
-- [ ] Backend/frontend test, lint và build thành công.
-- [ ] Demo được toàn bộ luồng trên điện thoại.
+- [x] Tất cả tiêu chí trong ba đặc tả đều đạt.
+- [x] Backend/frontend test, lint và build thành công.
+- [ ] Demo được toàn bộ luồng trên điện thoại. *(chờ người dùng demo qua http://192.168.1.11:8080)*
 - [ ] Người dùng review và chấp nhận MVP trước khi sang Phase 2.
