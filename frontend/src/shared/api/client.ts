@@ -12,6 +12,12 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return response.json() as Promise<T>;
   }
 
+  // Phiên hết hạn trên các API nghiệp vụ → đưa về trang login. Riêng
+  // /api/auth/* (kiểm tra phiên, login) tự xử lý 401 tại chỗ.
+  if (response.status === 401 && !path.startsWith("/api/auth/")) {
+    window.location.assign("/login");
+  }
+
   const payload = (await response.json().catch(() => ({}))) as ApiErrorPayload;
   const code = payload.error?.code;
   if (code === "NOT_FOUND") {

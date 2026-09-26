@@ -350,9 +350,9 @@ Plan chi tiết: `docs/PHASE-2-PLAN.md`
 **Phụ thuộc:** Task 13.  
 **Quy mô:** S.
 
-## Task 18: Production guide — Cloudflare Tunnel + domain
+## Task 18: Production — Oracle Cloud Free + Cloudflare
 
-**Mô tả:** Guide mua domain, Cloudflare Tunnel về máy nhà, HTTPS, backup volume, security review cuối.
+**Mô tả:** Guide mua domain, deploy lên Oracle Cloud Always Free (Docker Compose), Cloudflare DNS/HTTPS proxy, backup tự động volume, security review cuối.
 
 **Tiêu chí chấp nhận:**
 

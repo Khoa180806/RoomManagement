@@ -64,10 +64,18 @@ phòng của mình) sẽ mua domain và chạy production tại nhà, cần:
   + build Docker image; merge main → push ảnh lên **GHCR**.
 - Máy nhà deploy bằng `docker compose pull && up -d`; badge CI trên README.
 
-### Production tại nhà
+### Production tại nhà → Oracle Cloud Free (chốt 2026-09-26)
 
-- **Cloudflare Tunnel** + domain: không cần mở port, không lo IP động/CGNAT;
-  HTTPS tự động. Guide từng bước trong Task 18 kèm backup volume.
+- Không dùng máy nhà làm server (yêu cầu: không cần bật máy nhà 24/7).
+- Deploy lên **Oracle Cloud Always Free** (ARM 4 core / 24GB RAM / 200GB disk,
+  miễn phí vĩnh viễn) chạy Docker Compose; Cloudflare đứng trước làm DNS +
+  HTTPS proxy + giấu IP origin.
+- Trang chủ portfolio có thể host thêm bản tĩnh trên **Cloudflare Pages**
+  (luôn sống kể cả khi server bảo trì).
+- Backup tự động volume Postgres + chứng từ (dump nén, đẩy lên Cloudflare R2
+  free hoặc tải về máy).
+- Lưu ý: đăng ký Oracle cần thẻ để xác minh; nếu không lấy được instance ARM,
+  phương án B là VPS VN/Hetzner ~50–150k/tháng.
 
 ### Sửa hợp đồng
 
@@ -85,7 +93,7 @@ phòng của mình) sẽ mua domain và chạy production tại nhà, cần:
 | 15 | Dashboard: endpoint tổng hợp + stat mới + Recharts | M |
 | 16 | Settings: PATCH/gia hạn hợp đồng, Telegram, nhắc, TOTP/tài khoản | M |
 | 17 | lucide icons + animation trong app + UX polish | S |
-| 18 | Production guide: Cloudflare Tunnel + backup + security review | S |
+| 18 | Production guide: Oracle Cloud Free + Cloudflare + backup | S |
 | 19 | CI/CD: GitHub Actions + GHCR + badge | M |
 | 20 | README rewrite Phase 2 | S |
 

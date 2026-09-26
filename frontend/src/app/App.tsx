@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { ContractCard } from "../features/contracts/components/ContractCard";
 import { ContractForm } from "../features/contracts/components/ContractForm";
 import { BillForm } from "../features/bills/components/BillForm";
@@ -8,10 +9,23 @@ import { TelegramSettingsCard } from "../features/settings/components/TelegramSe
 import { ReminderSettingsCard } from "../features/settings/components/ReminderSettingsCard";
 import { ReminderHistory } from "../features/reminders/components/ReminderHistory";
 import { LoadingState } from "../components/feedback/Feedback";
+import { logout } from "../features/auth/api";
+import { useSession } from "../features/auth/SessionContext";
 import { useRentalWorkspace } from "./useRentalWorkspace";
 
 function App() {
   const workspace = useRentalWorkspace();
+  const navigate = useNavigate();
+  const { markUnauthenticated } = useSession();
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } finally {
+      markUnauthenticated();
+      navigate("/login", { replace: true });
+    }
+  }
 
   return (
     <main className="min-h-dvh">
@@ -26,7 +40,16 @@ function App() {
           <span className="rounded-[0.4rem] bg-ink p-[0.33rem] font-display text-[0.7rem] tracking-[0.05em] text-white" aria-hidden="true">RM</span>
           <span>Nhà trọ của tôi</span>
         </span>
-        <span className="text-[0.8125rem] text-muted">Quản lý phòng trọ</span>
+        <div className="flex items-center gap-4">
+          <span className="hidden text-[0.8125rem] text-muted sm:inline">Quản lý phòng trọ</span>
+          <button
+            type="button"
+            className="text-xs font-bold text-muted hover:text-clay hover:underline focus-visible:outline-3 focus-visible:outline-clay focus-visible:outline-offset-3"
+            onClick={() => void handleLogout()}
+          >
+            Đăng xuất
+          </button>
+        </div>
       </header>
 
       <section className="border-b border-line bg-sand px-6 py-14 md:px-8 md:py-20" aria-labelledby="page-title">
